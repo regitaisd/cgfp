@@ -116,7 +116,7 @@
         var volume = 0.2;
         riverTrack.setVolume(volume);
 
-        document.getElementById("daytime").onclick = function () { 
+        /*document.getElementById("daytime").onclick = function () { 
             setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
         };
     
@@ -154,9 +154,9 @@
             particleSystem.maxEmitBox = new BABYLON.Vector3(100, 0, 100); // To...
         
             // Colors of all particles
-            /*particleSystem.color1 = new BABYLON.Color4(1, 1, 1.0, 1.0);
+            particleSystem.color1 = new BABYLON.Color4(1, 1, 1.0, 1.0);
             particleSystem.color2 = new BABYLON.Color4(1, 1, 1.0, 0.5);
-            particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);*/
+            particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
         
             // Size of each particle (random between...
             particleSystem.minSize = 0.1;
@@ -192,7 +192,7 @@
                 groundMaterial.alpha = 0.4;
                 particleSystem.stop();
             }, 10000);
-        };
+        };*/
 
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         //var advancedTexture2 = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI2");
@@ -389,14 +389,14 @@
         var resetbtn = BABYLON.GUI.Button.CreateSimpleButton("resetbtn", "reset");
         resetbtn.width = 0.08;
         resetbtn.height = 0.05;
-        resetbtn.top = "30%";
+        resetbtn.top = "45%";
         resetbtn.left = "45%";
         resetbtn.color = "white";
         resetbtn.fontSize = 16;
         resetbtn.background = "green";
         //var buttonEvt;
         resetbtn.onPointerUpObservable.add(function () {
-            //setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
+            setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/grass.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
