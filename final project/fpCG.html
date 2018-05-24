@@ -209,10 +209,10 @@
         var water = new BABYLON.WaterMaterial("water", scene/*, new BABYLON.Vector2(1024, 1024)*/)
         water.backFaceCulling = true;
         water.bumpTexture = new BABYLON.Texture("textures/water4.jpg", scene);
-        //water.windForce = -3; // arus nya kencengin disini /Represents the wind force applied on the water surface
-        water.windForce = slider.value;
+        water.windForce = -5; // arus nya kencengin disini /Represents the wind force applied on the water surface
         water.waveHeight = 0.1;// Represents the height of the waves
         water.bumpHeight = 2; 
+        //water.waveLength = 0.5;
         water.waveLength = 0.5;
 
         river.scaling.y=0.7; // ukuran lebar
@@ -245,14 +245,15 @@
         header.color = "white";
         panel.addControl(header); 
 
-        slider.minimum = -3;
-        slider.maximum = 7;
-        slider.value = -3;
+        slider.minimum = 0.5;
+        slider.maximum = 5;
+        slider.value = 0.5;
         slider.height = "20px";
         slider.width = "200px";
         slider.onValueChangedObservable.add(function(value) {
             header.text = "Wind intensity";
             if (water) {
+                water.waveLength = value;
                 water.windForce = value;
                 //speed = value;
             }
@@ -262,8 +263,8 @@
         BABYLON.Engine.audioEngine.setGlobalVolume(0.4);
         var riverTrack = new BABYLON.Sound("Water", "sound/water.mp3", scene, null, {loop: true, autoplay: true});
         var rainTrack = new BABYLON.Sound("Rain", "sound/rain.mp3", scene, null, {loop: true, autoplay: false});
-        var snowTrack = new BABYLON.Sound("Snow", "sound/bell.mp3", scene, null, {loop: true, autoplay: false});
-        var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: false});
+        //var snowTrack = new BABYLON.Sound("Snow", "sound/bell.mp3", scene, null, {loop: true, autoplay: false});
+        //var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: false});
         var volume = 0.2;
         riverTrack.setVolume(volume);
         riverTrack.play();
