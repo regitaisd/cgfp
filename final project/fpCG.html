@@ -9,6 +9,7 @@
 
     <title>fp</title>
     <script type="text/javascript" src="babylon.custom2.js"></script>
+    <script type="text/javascript" src="star.js"></script>
     <link rel="stylesheet" type="text/css" href="Canvas.css"/>
 </head>
 <body style="background-color: black;">
@@ -50,6 +51,10 @@
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         ground.position.y = -2.05;
         ground.material = groundMaterial;
+
+        // var ground2 = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/TexturesCom_Grass0027_7_S.jpg", 200, 200, 250, 0, 10, scene, false);
+        // ground2.material = groundMaterial;
+        // ground2.position.z= 50;
 
         var moon = BABYLON.Mesh.CreateSphere("boxCloud", 5, 11, scene);
         moon.position = new BABYLON.Vector3(0, 40, 90);
@@ -231,15 +236,15 @@
         });
         ////////////
         var tree = new BABYLON.Mesh.CreateBox("tree", 1.0, scene);
-        //bridge.isVisible=false;
-        tree.actionManager = new BABYLON.ActionManager(scene);
+        tree.isVisible=false;
+        //tree.actionManager = new BABYLON.ActionManager(scene);
 
         BABYLON.SceneLoader.ImportMesh("", "tree/", "tree.babylon", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = tree;
-                // tree.position.z=12;
-                // tree.position.y=5;
-                // tree.position.x=-15;
+                // tree.position.z=15;
+                // //tree.position.y=5;
+                // tree.position.x=-25;
                 // tree.rotation.y = Math.PI/2;
 
                 // tree.scaling.x=tree.scaling.x+0.9;
@@ -248,6 +253,17 @@
                 
             }
         });
+        tree.position.z=15;
+        tree.position.x=-55;
+        var treeMove = new BABYLON.Mesh.CreateBox("treeMove", 4.0, scene);
+        treeMove.position.x=tree.position.x-2.3;
+        treeMove.position.z=tree.position.z-6;
+        treeMove.position.y=tree.position.y+3;
+        var treeMoveMaterial = new BABYLON.StandardMaterial("treeMoveMat", scene);
+        treeMove.material=treeMoveMaterial;
+        treeMoveMaterial.alpha=0;
+        treeMove.actionManager = new BABYLON.ActionManager(scene);
+
         var treeFall = function (property, from, to) {
             var keys = [
                 { 
@@ -266,14 +282,14 @@
             scene.beginDirectAnimation(tree, [animation], 0, 100, true);
         };
         
-        tree.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
+        treeMove.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
             treeFall("rotation.z", tree.rotation.z, -(Math.PI/2));
         }));
         /////////////
 
        // Water
         var river = BABYLON.Mesh.CreatePlane("test", 100, scene); 
-        river.rotation.x = 1.57;
+        river.rotation.x = Math.PI/2;
         //waterMesh1.rotation.x += Math.PI/2;
     
         var water = new BABYLON.WaterMaterial("water", scene/*, new BABYLON.Vector2(1024, 1024)*/)
@@ -283,7 +299,6 @@
         //water.windForce = slider.value;
         water.waveHeight = 0.1;// Represents the height of the waves
         water.bumpHeight = 2; 
-        //water.waveLength = 0.5;
         water.waveLength = 0.5;
 
         river.scaling.y=0.7; // ukuran lebar
@@ -312,7 +327,7 @@
         riverTrack.play();
 
         // Create a particle system
-        var particleSystem = new BABYLON.ParticleSystem("particles", 25000, scene);
+        var particleSystem = new BABYLON.ParticleSystem("particles", 50000, scene);
 
         //Texture of each particle
         particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
@@ -347,7 +362,8 @@
         particleSystem.minEmitPower = 1;
         particleSystem.maxEmitPower = 3;
         particleSystem.updateSpeed = 0.005;
-        ////////////////////////////
+
+        ////////////////////////
 
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -369,11 +385,20 @@
         slider.height = "20px";
         slider.width = "200px";
         slider.onValueChangedObservable.add(function(value) {
-            header.text = "Wind intensity";
+            header.text = "Wind intensity" +Math.round(value);
             if (water) {
                 water.waveLength = value;
-                water.windForce = value;
-                //speed = value;
+                water.windForce = -value;
+                if(Math.round(value)==1)
+                    speed=0.02;
+                if(Math.round(value)==2)
+                    speed=0.08;
+                else if(Math.round(value)==3)
+                    speed=0.1;
+                else if(Math.round(value)==4)
+                    speed=0.13;
+                else if(Math.round(value)==5)
+                    speed=0.16;
             }
         });
         panel.addControl(slider);    
@@ -432,16 +457,6 @@
         snowMaxSpeedpanel.isVisible=false;
         snowMaxSpeedheader.isVisible=false;
         ///////////////////
-
-        BABYLON.Engine.audioEngine.setGlobalVolume(0.4);
-        var riverTrack = new BABYLON.Sound("Water", "sound/water.mp3", scene, null, {loop: true, autoplay: true});
-        var rainTrack = new BABYLON.Sound("Rain", "sound/rain.mp3", scene, null, {loop: true, autoplay: false});
-        //var snowTrack = new BABYLON.Sound("Snow", "sound/bell.mp3", scene, null, {loop: true, autoplay: false});
-        //var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: false});
-        var volume = 0.2;
-        riverTrack.setVolume(volume);
-        riverTrack.play();
-
 
         var timerBackground = new BABYLON.GUI.Rectangle();
         timerBackground.width = 0.2;
@@ -563,32 +578,54 @@
         buttonRain.background = "green";
         //var buttonEvt;
         buttonRain.onPointerUpObservable.add(function () {
-            var postProcess = new BABYLON.DigitalRainPostProcess("DigitalRain", camera, 
-            {
-                font: "3px Monospace",
-                mixToNormal: 0.5,
-                mixToTile: 0.5        
-            });
-            timeleft = 10;
-            downloadTimer = setInterval(function(){
-                timeleft--;
-                var n = timeleft.toString();
-                label.text = n;
-                if(timeleft <= 0){
-                    label.text = "10";
-                    clearInterval(downloadTimer);
-                    timeleft = 10;
-                }
-            },1000);
-        //postProcess.setVisible=false;
-            rainTrack.play();
-            rainTrack.setVolume(volume);
-            window.setTimeout(function () {
-                scene.registerBeforeRender(function() {
-                    postProcess.mixToNormal = 1; 
-                });
-                rainTrack.stop();
-            }, 10000);
+            // Create a particle system
+            var particleSystemRain = new BABYLON.ParticleSystem("particles", 25000, scene);
+
+            //Texture of each particle
+            particleSystemRain.particleTexture = new BABYLON.Texture("textures/rain.jpg", scene);
+
+            // Where the particles come from
+            particleSystemRain.emitter = skybox2; // the starting object, the emitter
+            particleSystemRain.minEmitBox = new BABYLON.Vector3(-100, 0, -100); // Starting all from
+            particleSystemRain.maxEmitBox = new BABYLON.Vector3(100, 0, 100); // To...
+
+            // Colors of all particles
+            particleSystemRain.color1 = new BABYLON.Color4(24, 112, 199,1);
+            particleSystemRain.color2 = new BABYLON.Color4(24, 112, 199,1);
+            particleSystemRain.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+            // Size of each particle (random between...
+            particleSystemRain.minSize = 0.2;
+            particleSystemRain.maxSize = 0.3;
+
+            // Life time of each particle (random between...
+            particleSystemRain.minLifeTime = 0.3;
+            particleSystemRain.maxLifeTime = 15;
+
+            // Emission rate
+            particleSystemRain.emitRate = 50000;
+
+            // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+            particleSystemRain.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+            // Set the gravity of all particles
+            particleSystemRain.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+            // Direction of each particle after it has been emitted
+            particleSystemRain.direction1 = new BABYLON.Vector3(-2, -12, 3);
+            particleSystemRain.direction2 = new BABYLON.Vector3(2, -12, -3);
+
+            // Angular speed, in radians
+            particleSystemRain.minAngularSpeed = 0;
+            particleSystemRain.maxAngularSpeed = Math.PI;
+
+            // Speed
+            particleSystemRain.minEmitPower =11;
+            particleSystemRain.maxEmitPower = 14;
+            particleSystemRain.updateSpeed = 0.005;
+
+            // Start the particle system
+            particleSystemRain.start();
         });
         advancedTexture.addControl(buttonRain);
 
