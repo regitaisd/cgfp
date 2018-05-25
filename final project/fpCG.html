@@ -51,6 +51,10 @@
         ground.position.y = -2.05;
         ground.material = groundMaterial;
 
+        // var ground2 = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/TexturesCom_Grass0027_7_S.jpg", 200, 200, 250, 0, 10, scene, false);
+        // ground2.material = groundMaterial;
+        // ground2.position.z= 50;
+
         var moon = BABYLON.Mesh.CreateSphere("boxCloud", 5, 11, scene);
         moon.position = new BABYLON.Vector3(0, 40, 90);
 
@@ -231,15 +235,15 @@
         });
         ////////////
         var tree = new BABYLON.Mesh.CreateBox("tree", 1.0, scene);
-        //bridge.isVisible=false;
-        tree.actionManager = new BABYLON.ActionManager(scene);
+        tree.isVisible=false;
+        //tree.actionManager = new BABYLON.ActionManager(scene);
 
         BABYLON.SceneLoader.ImportMesh("", "tree/", "tree.babylon", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = tree;
-                // tree.position.z=12;
-                // tree.position.y=5;
-                // tree.position.x=-15;
+                // tree.position.z=15;
+                // //tree.position.y=5;
+                // tree.position.x=-25;
                 // tree.rotation.y = Math.PI/2;
 
                 // tree.scaling.x=tree.scaling.x+0.9;
@@ -248,6 +252,17 @@
                 
             }
         });
+        tree.position.z=15;
+        tree.position.x=-55;
+        var treeMove = new BABYLON.Mesh.CreateBox("treeMove", 4.0, scene);
+        treeMove.position.x=tree.position.x-2.3;
+        treeMove.position.z=tree.position.z-6;
+        treeMove.position.y=tree.position.y+3;
+        var treeMoveMaterial = new BABYLON.StandardMaterial("treeMoveMat", scene);
+        treeMove.material=treeMoveMaterial;
+        treeMoveMaterial.alpha=0;
+        treeMove.actionManager = new BABYLON.ActionManager(scene);
+
         var treeFall = function (property, from, to) {
             var keys = [
                 { 
@@ -266,14 +281,14 @@
             scene.beginDirectAnimation(tree, [animation], 0, 100, true);
         };
         
-        tree.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
+        treeMove.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
             treeFall("rotation.z", tree.rotation.z, -(Math.PI/2));
         }));
         /////////////
 
        // Water
         var river = BABYLON.Mesh.CreatePlane("test", 100, scene); 
-        river.rotation.x = 1.57;
+        river.rotation.x = Math.PI/2;
         //waterMesh1.rotation.x += Math.PI/2;
     
         var water = new BABYLON.WaterMaterial("water", scene/*, new BABYLON.Vector2(1024, 1024)*/)
@@ -371,7 +386,7 @@
             header.text = "Wind intensity";
             if (water) {
                 water.waveLength = value;
-                water.windForce = value;
+                water.windForce = -value;
                 //speed = value;
             }
         });
