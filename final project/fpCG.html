@@ -9,6 +9,7 @@
 
     <title>fp</title>
     <script type="text/javascript" src="babylon.custom2.js"></script>
+    <script type="text/javascript" src="star.js"></script>
     <link rel="stylesheet" type="text/css" href="Canvas.css"/>
 </head>
 <body style="background-color: black;">
@@ -326,7 +327,7 @@
         riverTrack.play();
 
         // Create a particle system
-        var particleSystem = new BABYLON.ParticleSystem("particles", 25000, scene);
+        var particleSystem = new BABYLON.ParticleSystem("particles", 50000, scene);
 
         //Texture of each particle
         particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
@@ -361,7 +362,8 @@
         particleSystem.minEmitPower = 1;
         particleSystem.maxEmitPower = 3;
         particleSystem.updateSpeed = 0.005;
-        ////////////////////////////
+
+        ////////////////////////
 
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -383,11 +385,20 @@
         slider.height = "20px";
         slider.width = "200px";
         slider.onValueChangedObservable.add(function(value) {
-            header.text = "Wind intensity";
+            header.text = "Wind intensity" +Math.round(value);
             if (water) {
                 water.waveLength = value;
                 water.windForce = -value;
-                //speed = value;
+                if(Math.round(value)==1)
+                    speed=0.02;
+                if(Math.round(value)==2)
+                    speed=0.08;
+                else if(Math.round(value)==3)
+                    speed=0.1;
+                else if(Math.round(value)==4)
+                    speed=0.13;
+                else if(Math.round(value)==5)
+                    speed=0.16;
             }
         });
         panel.addControl(slider);    
@@ -567,32 +578,54 @@
         buttonRain.background = "green";
         //var buttonEvt;
         buttonRain.onPointerUpObservable.add(function () {
-            var postProcess = new BABYLON.DigitalRainPostProcess("DigitalRain", camera, 
-            {
-                font: "3px Monospace",
-                mixToNormal: 0.5,
-                mixToTile: 0.5        
-            });
-            timeleft = 10;
-            downloadTimer = setInterval(function(){
-                timeleft--;
-                var n = timeleft.toString();
-                label.text = n;
-                if(timeleft <= 0){
-                    label.text = "10";
-                    clearInterval(downloadTimer);
-                    timeleft = 10;
-                }
-            },1000);
-        //postProcess.setVisible=false;
-            rainTrack.play();
-            rainTrack.setVolume(volume);
-            window.setTimeout(function () {
-                scene.registerBeforeRender(function() {
-                    postProcess.mixToNormal = 1; 
-                });
-                rainTrack.stop();
-            }, 10000);
+            // Create a particle system
+            var particleSystemRain = new BABYLON.ParticleSystem("particles", 25000, scene);
+
+            //Texture of each particle
+            particleSystemRain.particleTexture = new BABYLON.Texture("textures/rain.jpg", scene);
+
+            // Where the particles come from
+            particleSystemRain.emitter = skybox2; // the starting object, the emitter
+            particleSystemRain.minEmitBox = new BABYLON.Vector3(-100, 0, -100); // Starting all from
+            particleSystemRain.maxEmitBox = new BABYLON.Vector3(100, 0, 100); // To...
+
+            // Colors of all particles
+            particleSystemRain.color1 = new BABYLON.Color4(24, 112, 199,1);
+            particleSystemRain.color2 = new BABYLON.Color4(24, 112, 199,1);
+            particleSystemRain.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+
+            // Size of each particle (random between...
+            particleSystemRain.minSize = 0.2;
+            particleSystemRain.maxSize = 0.3;
+
+            // Life time of each particle (random between...
+            particleSystemRain.minLifeTime = 0.3;
+            particleSystemRain.maxLifeTime = 15;
+
+            // Emission rate
+            particleSystemRain.emitRate = 50000;
+
+            // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+            particleSystemRain.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+
+            // Set the gravity of all particles
+            particleSystemRain.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+            // Direction of each particle after it has been emitted
+            particleSystemRain.direction1 = new BABYLON.Vector3(-2, -12, 3);
+            particleSystemRain.direction2 = new BABYLON.Vector3(2, -12, -3);
+
+            // Angular speed, in radians
+            particleSystemRain.minAngularSpeed = 0;
+            particleSystemRain.maxAngularSpeed = Math.PI;
+
+            // Speed
+            particleSystemRain.minEmitPower =11;
+            particleSystemRain.maxEmitPower = 14;
+            particleSystemRain.updateSpeed = 0.005;
+
+            // Start the particle system
+            particleSystemRain.start();
         });
         advancedTexture.addControl(buttonRain);
 
