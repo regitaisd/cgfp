@@ -43,7 +43,7 @@
     
         // Ground
         // var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "textures/dirt_01.png", 100, 100, 100, 0, 10, scene, false);
-        ground = new BABYLON.Mesh.CreateGround("ground", 500, 500, 300, scene);
+        ground = new BABYLON.Mesh.CreateGround("ground", 550, 550, 300, scene);
         var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
         groundMaterial.diffuseTexture.uScale = 6;
@@ -137,7 +137,7 @@
 
 
         var skybox2 = BABYLON.Mesh.CreatePlane("sky", 1000.0, scene);
-        skybox2.position = new BABYLON.Vector3(0, 50, 0);
+        skybox2.position = new BABYLON.Vector3(0, 75, 0);
         skybox2.isVisible=false;
     
         var setSkyConfig = function (property, from, to) {
@@ -234,6 +234,33 @@
                 
             }
         });
+
+        var house = new BABYLON.Mesh.CreateBox("house", 1.0, scene);
+        house.isVisible=false;
+        house.actionManager = new BABYLON.ActionManager(scene);
+
+        BABYLON.SceneLoader.ImportMesh("", "house/", "medieval-house-2.babylon", scene, function(newMeshes){
+            for(i = 0; i < newMeshes.length; i++){
+                /*newMeshes[i].position.z=newMeshes[i].position.z+5;
+                newMeshes[i].position.y=newMeshes[i].position.y+5;
+                newMeshes[i].position.x=newMeshes[i].position.x-15;
+                newMeshes[i].rotation.y = 3;
+                newMeshes[i].scaling.x=newMeshes[i].scaling.x+1;
+                newMeshes[i].scaling.y=newMeshes[i].scaling.y+1;
+                newMeshes[i].scaling.z=newMeshes[i].scaling.z+1;*/
+
+                newMeshes[i].parent = house;
+                house.position.z=90;
+                house.position.y=8;
+                house.position.x=-150;
+                house.rotation.y = Math.PI;
+
+                house.scaling.x=house.scaling.x+4;
+                house.scaling.y=house.scaling.y+4;
+                house.scaling.z=house.scaling.z+4;
+                
+            }
+        });
         ////////////
         var tree = new BABYLON.Mesh.CreateBox("tree", 1.0, scene);
         tree.isVisible=false;
@@ -302,7 +329,7 @@
         water.waveLength = 0.5;
 
         river.scaling.y=0.7; // ukuran lebar
-        river.scaling.x=4.3; // ukuran panjang
+        river.scaling.x=5; // ukuran panjang
         river.position.z = -30; //deket jauhnya ke dpan belakang (kalo mo jauhan/deketan ke camera)
         //waterMesh1.alpha=0.5;
         water.colorBlendFactor = 0;
