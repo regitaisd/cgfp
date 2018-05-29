@@ -392,8 +392,8 @@
 
         // Where the particles come from
         particleSystemRain.emitter = skybox2; // the starting object, the emitter
-        particleSystemRain.minEmitBox = new BABYLON.Vector3(-100, 0, -100); // Starting all from
-        particleSystemRain.maxEmitBox = new BABYLON.Vector3(100, 0, 100); // To...
+        particleSystemRain.minEmitBox = new BABYLON.Vector3(-200, 0, -250); // Starting all from
+        particleSystemRain.maxEmitBox = new BABYLON.Vector3(200, 0, 75); // To...
 
         // Colors of all particles
         particleSystemRain.color1 = new BABYLON.Color4(24, 112, 199,1);
@@ -430,6 +430,50 @@
         particleSystemRain.maxEmitPower = 14;
         particleSystemRain.updateSpeed = 0.005;
         /////////////////////////
+
+        var skybox3 = BABYLON.Mesh.CreatePlane("sky", 1000.0, scene);
+        skybox3.position = new BABYLON.Vector3(0, 75, 300);
+        skybox3.isVisible=false;
+        // Create a particle system
+        var particleSystemLightning = new BABYLON.ParticleSystem("particles", 1, scene);
+        
+        //Texture of eLightningach particle
+        particleSystemLightning.particleTexture = new BABYLON.Texture("textures/lightning2.jpg", scene);
+        // Where the pLightningarticles come from
+        particleSystemLightning.emitter = skybox3; // the starting object, the emitter
+        particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 5,0); // Starting all from
+        particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); // To...
+        
+        // Size of eacLightningh particle (random between...
+        particleSystemLightning.minSize = 500;
+        particleSystemLightning.maxSize = 500;
+        
+        // Life time oLightningf each particle (random between...
+        particleSystemLightning.minLifeTime = 1.3;
+        particleSystemLightning.maxLifeTime = 2.5;
+        
+        // Emission raLightningte
+        particleSystemLightning.emitRate = 1;
+        
+        // Blend mode Lightning: BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+        particleSystemLightning.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
+        
+         // Set the grLightningavity of all particles
+        particleSystemLightning.gravity = new BABYLON.Vector3(0, 0, 0);
+        
+        // Direction oLightningf each particle after it has been emitted
+        particleSystemLightning.direction1 = new BABYLON.Vector3(0.005, 0, 0.005);
+        particleSystemLightning.direction2 = new BABYLON.Vector3(-0.005, 0, -0.005);
+        
+        // Angular speLightninged, in radians
+        particleSystemLightning.minAngularSpeed = particleSystem.maxAngularSpeed = 0;
+        
+        // Speed
+        particleSystemLightning.minEmitPower = 0.5;
+        particleSystemLightning.maxEmitPower = 5;
+        particleSystemLightning.updateSpeed = 0.2;
+
+        ////////////////////////
 
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -531,19 +575,19 @@
         advancedTexture.addControl(rainMaxSpeedpanel);
 
         var rainMaxSpeedheader = new BABYLON.GUI.TextBlock();
-        rainMaxSpeedheader.text = "rain max speed: " +particleSystemRain.maxEmitPower;
+        rainMaxSpeedheader.text = "rain heaviness: " +particleSystemRain.maxEmitPower;
         rainMaxSpeedheader.height = "30px";
         rainMaxSpeedheader.color = "white";
         rainMaxSpeedpanel.addControl(rainMaxSpeedheader); 
 
         var rainMaxSpeedslider = new BABYLON.GUI.Slider();
-        rainMaxSpeedslider.minimum = 1;
+        rainMaxSpeedslider.minimum = 5;
         rainMaxSpeedslider.maximum = 100;
         rainMaxSpeedslider.value = 0;
         rainMaxSpeedslider.height = "15px";
         rainMaxSpeedslider.width = "150px";
         rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
-            rainMaxSpeedheader.text = "rain max speed: " + Math.round(value) ;
+            rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value) ;
         });
         rainMaxSpeedpanel.addControl(rainMaxSpeedslider);
 
@@ -592,7 +636,7 @@
             water.bumpHeight = 0.5; 
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.5);
             moon.isVisible=false;
-            //////////////////////////// INI2 //////////////////
+           
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     starPosition2(SPS.particles[p]);
@@ -644,6 +688,8 @@
         });
         advancedTexture.addControl(buttonNight);
 
+        var startLightning;
+        var stopLightning;
         var buttonStopRain = BABYLON.GUI.Button.CreateSimpleButton("buttonStopRain", "stop rain");
         buttonStopRain.width = 0.05;
         buttonStopRain.height = 0.04;
@@ -657,7 +703,11 @@
         //var buttonEvt;
         buttonStopRain.onPointerUpObservable.add(function () {
             buttonStopRain.isVisible=false;
+            // particleSystemLightning.isVisible=false;
             particleSystemRain.stop();
+            clearTimeout(stopLightning);
+            clearInterval(startLightning);
+            particleSystemLightning.stop();
             rainMaxSpeedpanel.isVisible=false;
             rainMaxSpeedheader.isVisible=false;
             rainMaxSpeedslider.isVisible=false;
@@ -684,10 +734,31 @@
             rainMaxSpeedslider.isVisible=true;
 
             rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
-                rainMaxSpeedheader.text = "rain max speed: " + Math.round(value);
+                rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
                 particleSystemRain.maxEmitPower = value;
                 particleSystemRain.minEmitPower =value;
+                if(4<Math.round(value)<21)
+                    particleSystemRain.emitRate=50000;
+                else if(20<Math.round(value)<41)
+                    particleSystemRain.emitRate=70000;
+                else if(40<Math.round(value)<51)
+                    particleSystemRain.emitRate=90000;
+                else if(50<Math.round(value)<71)
+                    particleSystemRain.emitRate=100000;
+                else if(70<Math.round(value)<101)
+                    particleSystemRain.emitRate=120000;
             });
+
+            startLightning = setInterval(function () {
+                
+                particleSystemLightning.start();
+                
+                stopLightning = setTimeout(function () {
+                    particleSystemLightning.stop();
+                }, 100);
+                
+            }, 1000);
+            /////////////
         });
         advancedTexture.addControl(buttonRain);
 
