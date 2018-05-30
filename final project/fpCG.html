@@ -596,6 +596,30 @@
         rainMaxSpeedslider.isVisible=false;
         /////////////////
 
+        var fogThickPanel = new BABYLON.GUI.StackPanel();
+        fogThickPanel.width = "220px";
+        fogThickPanel.top = "-27%";
+        fogThickPanel.left = "-40%";
+        advancedTexture.addControl(fogThickPanel);
+
+        var fogThickHeader = new BABYLON.GUI.TextBlock();
+        fogThickHeader.text = "fog thickness: " + scene.fogDensity;
+        fogThickHeader.height = "30px";
+        fogThickHeader.color = "white";
+        fogThickPanel.addControl(fogThickHeader);
+
+        var fogThickSlider = new BABYLON.GUI.Slider();
+        fogThickSlider.minimum = 0;
+        fogThickSlider.maximum = 0.05;
+        fogThickSlider.value = 0;
+        fogThickSlider.height = "15px";
+        fogThickSlider.width = "150px";
+        fogThickPanel.addControl(fogThickSlider);
+
+        fogThickSlider.isVisible = false;
+        fogThickHeader.isVisible = false;
+        fogThickPanel.isVisible = false;
+
         var buttonDaytime = BABYLON.GUI.Button.CreateSimpleButton("buttonDaytime", "daytime");
         buttonDaytime.width = 0.05;
         buttonDaytime.height = 0.04;
@@ -832,15 +856,23 @@
         buttonFog.background = "green";
         //var buttonEvt;
         buttonFog.onPointerUpObservable.add(function () {
+            buttonStopFog.isVisible = true;
+            fogThickPanel.isVisible = true;
+            fogThickHeader.isVisible = true;
+            fogThickSlider.isVisible = true;
             scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
             //scene.fogStart = 20.0;
             //scene.fogEnd = 60.0;
             scene.fogColor = new BABYLON.Color3(0.91, 0.90, 0.93);
-            scene.fogDensity = 0.01;
-            var alpha = 0;
-            scene.registerBeforeRender(function () {
-                scene.fogDensity = Math.sin(alpha) / 50;
-                alpha += 0.02;
+            scene.fogDensity = fogThickSlider.value;
+            var fogAlpha = 0;
+            fogThickSlider.onValueChangedObservable.add(function(value){
+                scene.fogDensity = value;
+                fogThickHeader.text = "fog thickness: " + scene.fogDensity;
+            });
+            /*scene.registerBeforeRender(function () {
+                scene.fogDensity = Math.cos(fogAlpha) / 50;
+                fogAlpha += 0.02;
             });
             timeleft = 10;
             downloadTimer = setInterval(function(){
@@ -856,9 +888,28 @@
 
             window.setTimeout(function(){
                 scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
-            }, 15000);
+            }, 15000);*/
         });
         advancedTexture.addControl(buttonFog);
+
+        var buttonStopFog = BABYLON.GUI.Button.CreateSimpleButton("buttonStopFog", "stop fog");
+        buttonStopFog.width = 0.05;
+        buttonStopFog.height = 0.04;
+        buttonStopFog.top = "-15%";
+       //uttonStopSnow.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        buttonStopFog.left = "-40%";
+        buttonStopFog.color = "white";
+        buttonStopFog.fontSize = 14;
+        buttonStopFog.background = "green";
+        buttonStopFog.isVisible=false;
+        buttonStopFog.onPointerUpObservable.add(function(){
+            scene.fogMode = BABYLON.Scene.FOGMODE_NONE;
+            buttonStopFog.isVisible = false;
+            fogThickPanel.isVisible = false;
+            fogThickHeader.isVisible = false;
+            fogThickSlider.isVisible = false;
+        });
+        advancedTexture.addControl(buttonStopFog);
 
         /*var buttonWind = BABYLON.GUI.Button.CreateSimpleButton("buttonwind", "wind");
         buttonWind.width = 0.05;
@@ -887,6 +938,8 @@
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
+            treeFall("rotation.z", tree.rotation.z, Math.PI/180);
+            scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
             //groundMaterial.alpha = 0;
         });
         advancedTexture.addControl(resetbtn);
