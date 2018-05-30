@@ -312,7 +312,7 @@
         river.rotation.x = Math.PI/2;
         //waterMesh1.rotation.x += Math.PI/2;
     
-        var water = new BABYLON.WaterMaterial("water", scene/*, new BABYLON.Vector2(1024, 1024)*/)
+        var water = new BABYLON.WaterMaterial("water", scene)
         water.backFaceCulling = true;
         water.bumpTexture = new BABYLON.Texture("textures/water4.jpg", scene);
         water.windForce = -5; // arus nya kencengin disini /Represents the wind force applied on the water surface
@@ -581,8 +581,8 @@
         rainMaxSpeedpanel.addControl(rainMaxSpeedheader); 
 
         var rainMaxSpeedslider = new BABYLON.GUI.Slider();
-        rainMaxSpeedslider.minimum = 5;
-        rainMaxSpeedslider.maximum = 100;
+        rainMaxSpeedslider.minimum = 10;
+        rainMaxSpeedslider.maximum = 45;
         rainMaxSpeedslider.value = 0;
         rainMaxSpeedslider.height = "15px";
         rainMaxSpeedslider.width = "150px";
@@ -737,16 +737,14 @@
                 rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
                 particleSystemRain.maxEmitPower = value;
                 particleSystemRain.minEmitPower =value;
-                if(4<Math.round(value)<21)
+                if(9<Math.round(value)<14)
                     particleSystemRain.emitRate=50000;
-                else if(20<Math.round(value)<41)
+                else if(13<Math.round(value)<20)
                     particleSystemRain.emitRate=70000;
-                else if(40<Math.round(value)<51)
+                else if(19<Math.round(value)<30)
                     particleSystemRain.emitRate=90000;
-                else if(50<Math.round(value)<71)
-                    particleSystemRain.emitRate=100000;
-                else if(70<Math.round(value)<101)
-                    particleSystemRain.emitRate=120000;
+                else if(29<Math.round(value)<46)
+                    particleSystemRain.emitRate=150000;
             });
 
             startLightning = setInterval(function () {
@@ -757,7 +755,7 @@
                     particleSystemLightning.stop();
                 }, 100);
                 
-            }, 1000);
+            }, 3000);
             /////////////
         });
         advancedTexture.addControl(buttonRain);
