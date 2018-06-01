@@ -157,7 +157,7 @@
             animation.setKeys(keys);
         
             scene.stopAnimation(skybox);
-            scene.beginDirectAnimation(skybox, [animation], 0, 100, true);
+            scene.beginDirectAnimation(skybox, [animation], 0, 5, true);
         };
     
 
@@ -178,24 +178,21 @@
         wallsMaterial.diffuseTexture = new BABYLON.Texture("textures/brick.jpg", scene);
         walls.material = wallsMaterial;
 
-        //robotMain.position.y = 3;
-        //robotMain.physicsImpostor = new BABYLON.PhysicsImpostor(robotMain, BABYLON.PhysicsImpostor.BoxImpostor, {mass: 1, restitution: 0.5, friction: 0.2}, scene);
-
         var slider = new BABYLON.GUI.Slider();
         //var speed= slider.value;
-        var speed = 0.01;
+        var sirenSpeed = 0.01;
         var siren = new BABYLON.Mesh.CreateBox("siren", 1.0, scene);
         siren.actionManager = new BABYLON.ActionManager(scene);
 
         siren.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
-            if(speed<0.1)
-                speed=speed+0.02;
+            if(sirenSpeed<0.1)
+                sirenSpeed=sirenSpeed+0.02;
             else
-                speed=0.01;
+                sirenSpeed=0.01;
         }));
 
         BABYLON.SceneLoader.ImportMesh("", "rotor/", "Rotor8_fixed.stl", scene, function(newMeshes){
-            for(i = 0; i < 4; i++){
+            for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = siren;
                 siren.position.z=25;
                 siren.position.y=30;
@@ -208,6 +205,24 @@
                 //robotMain.scaling.y=10;
             }
         });
+
+        var toy = new BABYLON.Mesh.CreateBox("toy", 1.0, scene);
+        var toySpeed = 0;
+        BABYLON.SceneLoader.ImportMesh("", "swing/", "Cadnav.com_B0419142.obj", scene, function(newMeshes){
+            for(i = 0; i <newMeshes.length; i++){
+                newMeshes[i].parent = toy;
+                toy.position.z=30;
+                // toy.position.y=30;
+                // toy.position.x=80;
+               // toy.rotation.x = 1.57;
+
+                 newMeshes[i].scaling.x= newMeshes[i].scaling.x-0.7;
+                 newMeshes[i].scaling.y= newMeshes[i].scaling.y-0.7;
+                 newMeshes[i].scaling.z= newMeshes[i].scaling.z-0.7;
+                //robotMain.scaling.y=10;
+            }
+        });
+
 
         var bridge = new BABYLON.Mesh.CreateBox("bridge", 1.0, scene);
         bridge.isVisible=false;
@@ -227,6 +242,7 @@
                 
             }
         });
+
 
         var house = new BABYLON.Mesh.CreateBox("house", 1.0, scene);
         house.isVisible=false;
@@ -259,25 +275,25 @@
         tree.isVisible=false;
         //tree.actionManager = new BABYLON.ActionManager(scene);
 
-        BABYLON.SceneLoader.ImportMesh("", "tree/", "tree.babylon", scene, function(newMeshes){
+        BABYLON.SceneLoader.ImportMesh("", "tree/", "D0406452B25.obj", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = tree;
                 // tree.position.z=15;
-                // //tree.position.y=5;
+                //tree.position.y=-6;
                 // tree.position.x=-25;
-                // tree.rotation.y = Math.PI/2;
+                 // tree.rotation.y = Math.PI/2;
 
-                // tree.scaling.x=tree.scaling.x+0.9;
-                // tree.scaling.y=tree.scaling.y+0.9;
-                // tree.scaling.z=tree.scaling.z+0.9;
+                tree.scaling.x=tree.scaling.x;
+                tree.scaling.y=tree.scaling.y;
+                tree.scaling.z=tree.scaling.z;
                 
             }
         });
         tree.position.z=15;
         tree.position.x=-55;
         var treeMove = new BABYLON.Mesh.CreateBox("treeMove", 4.0, scene);
-        treeMove.position.x=tree.position.x-2.3;
-        treeMove.position.z=tree.position.z-6;
+        treeMove.position.x=tree.position.x+4.4;
+        treeMove.position.z=tree.position.z+2;
         treeMove.position.y=tree.position.y+3;
         var treeMoveMaterial = new BABYLON.StandardMaterial("treeMoveMat", scene);
         treeMove.material=treeMoveMaterial;
@@ -303,7 +319,7 @@
         };
         
         treeMove.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
-            treeFall("rotation.z", tree.rotation.z, -(Math.PI/2));
+            treeFall("rotation.z", tree.rotation.z, -(1.39626));
         }));
         /////////////
 
@@ -334,6 +350,7 @@
         water.addToRenderList(siren);
         water.addToRenderList(walls);
         water.addToRenderList(bridge);
+        water.addToRenderList(tree);
     
         river.material = water;
 
@@ -466,7 +483,7 @@
         particleSystemLightning.direction2 = new BABYLON.Vector3(-0.005, 0, -0.005);
         
         // Angular speLightninged, in radians
-        particleSystemLightning.minAngularSpeed = particleSystem.maxAngularSpeed = 0;
+        //particleSystemLightning.minAngularSpeed = particleSystem.maxAngularSpeed = 0;
         
         // Speed
         particleSystemLightning.minEmitPower = 0.5;
@@ -474,6 +491,20 @@
         particleSystemLightning.updateSpeed = 0.2;
 
         ////////////////////////
+        var fire = new BABYLON.FireMaterial("fire", scene);
+        fire.diffuseTexture = new BABYLON.Texture("textures/fire.png", scene);
+        fire.distortionTexture = new BABYLON.Texture("textures/distortion.png", scene);
+        fire.opacityTexture = new BABYLON.Texture("textures/candleOpacity.png", scene);
+        fire.speed = 5.0;
+
+        firePlane = BABYLON.Mesh.CreatePlane("fireplane", 1.5, scene);
+        firePlane.position = treeMove.position;
+        firePlane.scaling.x = 20;
+        firePlane.scaling.y = 50
+        firePlane.isVisible=false;
+
+        firePlane.material = fire;
+        ///////////////////
 
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
@@ -499,16 +530,26 @@
             if (water) {
                 water.waveLength = value;
                 water.windForce = -value;
-                if(Math.round(value)==1)
-                    speed=0.02;
-                if(Math.round(value)==2)
-                    speed=0.08;
-                else if(Math.round(value)==3)
-                    speed=0.1;
-                else if(Math.round(value)==4)
-                    speed=0.13;
-                else if(Math.round(value)==5)
-                    speed=0.16;
+                if(Math.round(value)==1){
+                    sirenSpeed=0.02;
+                    toySpeed=0;
+                }
+                if(Math.round(value)==2){
+                    sirenSpeed=0.08;
+                    toySpeed=0.01;
+                } 
+                else if(Math.round(value)==3){
+                    sirenSpeed=0.1;
+                    toySpeed=0.02;
+                }
+                else if(Math.round(value)==4){
+                    sirenSpeed=0.13;
+                    toySpeed=0.04;
+                }
+                else if(Math.round(value)==5){
+                    sirenSpeed=0.16;
+                    toySpeed=0.06;
+                }     
             }
         });
         panel.addControl(slider);    
@@ -938,14 +979,30 @@
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
+
+            
+            treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
+
+            moon.isVisible=false;
+           
+            SPS.initParticles = function () {
+                for (var p = 0; p < SPS.nbParticles; p++) {
+                    starPosition2(SPS.particles[p]);
+                }
+            }
+            SPS.initParticles();
+            SPS.setParticles();
+
             treeFall("rotation.z", tree.rotation.z, Math.PI/180);
             scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+
             //groundMaterial.alpha = 0;
         });
         advancedTexture.addControl(resetbtn);
 
         engine.runRenderLoop(function(){
-            siren.rotate(BABYLON.Axis.Y, speed, BABYLON.Space.LOCAL);
+            siren.rotate(BABYLON.Axis.Y, sirenSpeed, BABYLON.Space.LOCAL);
+            toy.rotate(BABYLON.Axis.Y, toySpeed, BABYLON.Space.LOCAL);
            // camera.rotation.y = 0;
             scene.render();
         });
