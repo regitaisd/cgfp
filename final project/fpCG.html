@@ -979,6 +979,7 @@
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
+
             
             treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
 
@@ -991,6 +992,10 @@
             }
             SPS.initParticles();
             SPS.setParticles();
+
+            treeFall("rotation.z", tree.rotation.z, Math.PI/180);
+            scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+
             //groundMaterial.alpha = 0;
         });
         advancedTexture.addControl(resetbtn);
