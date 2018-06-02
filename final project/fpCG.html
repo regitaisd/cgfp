@@ -354,14 +354,25 @@
     
         river.material = water;
 
-        BABYLON.Engine.audioEngine.setGlobalVolume(0.4);
+        //SOUND EFFECTS
         var riverTrack = new BABYLON.Sound("Water", "sound/water.mp3", scene, null, {loop: true, autoplay: true});
-        var rainTrack = new BABYLON.Sound("Rain", "sound/rain.mp3", scene, null, {loop: true, autoplay: false});
-        //var snowTrack = new BABYLON.Sound("Snow", "sound/bell.mp3", scene, null, {loop: true, autoplay: false});
-        //var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: false});
-        var volume = 0.2;
-        riverTrack.setVolume(volume);
+        var rainTrack = new BABYLON.Sound("Rain", "sound/rain2.mp3", scene, null, {loop: true, autoplay: false});
+        //var heavyRainTrack = new BABYLON.Sound("Heavy Rain", "sound/heavy-rain.mp3", scene, null, {loop: true, autoplay: false});
+        var windTrack = new BABYLON.Sound("Wind", "sound/wind.mp3", scene, null, {loop:true, autoplay: true});
+        var dayTrack = new BABYLON.Sound("Day", "sound/day.mp3", scene, null, {loop: true, autoplay: true});
+        var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: true});
+        var volumeNull = 0;
+        var volumeVeryLow = 0.1;
+        var volumeLow = 0.2;
+        var volumeHigh = 0.4;
+        riverTrack.setVolume(volumeVeryLow);
+        windTrack.setVolume(volumeNull);
+        dayTrack.setVolume(volumeLow);
+        nightTrack.setVolume(volumeNull);
         riverTrack.play();
+        windTrack.play();
+        dayTrack.play();
+        nightTrack.play();
 
         // Create a particle system
         var particleSystem = new BABYLON.ParticleSystem("particles", 50000, scene);
@@ -526,30 +537,56 @@
         slider.height = "20px";
         slider.width = "200px";
         slider.onValueChangedObservable.add(function(value) {
-            header.text = "Wind intensity" +Math.round(value);
+            header.text = "Wind intensity: " + Math.round(value);
             if (water) {
                 water.waveLength = value;
                 water.windForce = -value;
                 if(Math.round(value)==1){
                     sirenSpeed=0.02;
                     toySpeed=0;
+                    particleSystem.direction1 = new BABYLON.Vector3(-7, -8, 3);
+                    particleSystem.direction2 = new BABYLON.Vector3(7, -8, -3);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-2, -12, 3);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(2, -12, -3);
                 }
                 if(Math.round(value)==2){
                     sirenSpeed=0.08;
                     toySpeed=0.01;
+                    particleSystem.direction1 = new BABYLON.Vector3(-9, -8, -9);
+                    particleSystem.direction2 = new BABYLON.Vector3(-9, -8, -9);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-5, -12, -5);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-5, -12, -5);
                 } 
                 else if(Math.round(value)==3){
                     sirenSpeed=0.1;
                     toySpeed=0.02;
+                    particleSystem.direction1 = new BABYLON.Vector3(-10, -8, -10);
+                    particleSystem.direction2 = new BABYLON.Vector3(-10, -8, -10);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-7, -12, -7);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-7, -12, -7);
                 }
                 else if(Math.round(value)==4){
                     sirenSpeed=0.13;
                     toySpeed=0.04;
+                    particleSystem.direction1 = new BABYLON.Vector3(-12, -8, -12);
+                    particleSystem.direction2 = new BABYLON.Vector3(-12, -8, -12);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-9, -12, -9);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-9, -12, -9);
                 }
                 else if(Math.round(value)==5){
                     sirenSpeed=0.16;
                     toySpeed=0.06;
-                }     
+                    particleSystem.direction1 = new BABYLON.Vector3(-14, -8, -14);
+                    particleSystem.direction2 = new BABYLON.Vector3(-14, -8, -14);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-12, -12, -12);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-12, -12, -12);
+                }
+
+                if(Math.round(value) == 2 || Math.round(value) == 3){
+                    windTrack.setVolume(volumeLow);
+                } else if (Math.round(value) == 3 || Math.round(value) == 4 || Math.round(value) == 5){
+                    windTrack.setVolume(volumeHigh);
+                }
             }
         });
         panel.addControl(slider);    
@@ -684,6 +721,8 @@
             }
             SPS.initParticles();
             SPS.setParticles();
+            dayTrack.setVolume(volumeLow);
+            nightTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonDaytime);
 
@@ -727,7 +766,6 @@
         buttonNight.onPointerUpObservable.add(function () {
             water.bumpHeight = 0.5; 
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.7);
-
             window.setTimeout(function () {
                 moon.isVisible=true;
                 ////////////////////// INI2//////////////////
@@ -750,6 +788,8 @@
                 SPS.initParticles();
                 SPS.setParticles();
             }, 900);
+            nightTrack.setVolume(volumeLow);
+            dayTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonNight);
 
@@ -776,6 +816,7 @@
             rainMaxSpeedpanel.isVisible=false;
             rainMaxSpeedheader.isVisible=false;
             rainMaxSpeedslider.isVisible=false;
+            rainTrack.stop();
         });
         advancedTexture.addControl(buttonStopRain);
 
@@ -821,7 +862,7 @@
                 }, 100);
                 
             }, 3000);
-            /////////////
+            rainTrack.play();
         });
         advancedTexture.addControl(buttonRain);
 
@@ -979,12 +1020,8 @@
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
-
-            
             treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
-
             moon.isVisible=false;
-           
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     starPosition2(SPS.particles[p]);
@@ -992,10 +1029,11 @@
             }
             SPS.initParticles();
             SPS.setParticles();
-
             treeFall("rotation.z", tree.rotation.z, Math.PI/180);
             scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
-
+            dayTrack.setVolume(volumeLow);
+            windTrack.setVolume(volumeNull);
+            nightTrack.setVolume(volumeNull);
             //groundMaterial.alpha = 0;
         });
         advancedTexture.addControl(resetbtn);
