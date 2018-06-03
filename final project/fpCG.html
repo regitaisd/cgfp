@@ -315,7 +315,7 @@
             var animation = new BABYLON.Animation("animation", property, 5, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setKeys(keys);
         
-            scene.beginDirectAnimation(tree, [animation], 0, 100, true);
+            scene.beginDirectAnimation(tree, [animation], 0, 5, true);
         };
         
         treeMove.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
@@ -354,14 +354,26 @@
     
         river.material = water;
 
-        BABYLON.Engine.audioEngine.setGlobalVolume(0.4);
+        //SOUND EFFECTS
         var riverTrack = new BABYLON.Sound("Water", "sound/water.mp3", scene, null, {loop: true, autoplay: true});
-        var rainTrack = new BABYLON.Sound("Rain", "sound/rain.mp3", scene, null, {loop: true, autoplay: false});
-        //var snowTrack = new BABYLON.Sound("Snow", "sound/bell.mp3", scene, null, {loop: true, autoplay: false});
-        //var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: false});
-        var volume = 0.2;
-        riverTrack.setVolume(volume);
+        var rainTrack = new BABYLON.Sound("Rain", "sound/rain2.mp3", scene, null, {loop: true, autoplay: false});
+        var thunderTrack = new BABYLON.Sound("thunder", "sound/thunder2.mp3", scene, null, {loop: true, autoplay: false});
+        //var heavyRainTrack = new BABYLON.Sound("Heavy Rain", "sound/heavy-rain.mp3", scene, null, {loop: true, autoplay: false});
+        var windTrack = new BABYLON.Sound("Wind", "sound/wind.mp3", scene, null, {loop:true, autoplay: true});
+        var dayTrack = new BABYLON.Sound("Day", "sound/day.mp3", scene, null, {loop: true, autoplay: true});
+        var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: true});
+        var volumeNull = 0;
+        var volumeVeryLow = 0.1;
+        var volumeLow = 0.2;
+        var volumeHigh = 0.4;
+        riverTrack.setVolume(volumeVeryLow);
+        windTrack.setVolume(volumeNull);
+        dayTrack.setVolume(volumeLow);
+        nightTrack.setVolume(volumeNull);
         riverTrack.play();
+        windTrack.play();
+        dayTrack.play();
+        nightTrack.play();
 
         // Create a particle system
         var particleSystem = new BABYLON.ParticleSystem("particles", 50000, scene);
@@ -526,30 +538,56 @@
         slider.height = "20px";
         slider.width = "200px";
         slider.onValueChangedObservable.add(function(value) {
-            header.text = "Wind intensity" +Math.round(value);
+            header.text = "Wind intensity: " + Math.round(value);
             if (water) {
                 water.waveLength = value;
                 water.windForce = -value;
                 if(Math.round(value)==1){
                     sirenSpeed=0.02;
                     toySpeed=0;
+                    particleSystem.direction1 = new BABYLON.Vector3(-7, -8, 3);
+                    particleSystem.direction2 = new BABYLON.Vector3(7, -8, -3);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-2, -12, 3);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(2, -12, -3);
                 }
                 if(Math.round(value)==2){
                     sirenSpeed=0.08;
                     toySpeed=0.01;
+                    particleSystem.direction1 = new BABYLON.Vector3(-9, -8, -9);
+                    particleSystem.direction2 = new BABYLON.Vector3(-9, -8, -9);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-5, -12, -5);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-5, -12, -5);
                 } 
                 else if(Math.round(value)==3){
                     sirenSpeed=0.1;
                     toySpeed=0.02;
+                    particleSystem.direction1 = new BABYLON.Vector3(-10, -8, -10);
+                    particleSystem.direction2 = new BABYLON.Vector3(-10, -8, -10);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-7, -12, -7);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-7, -12, -7);
                 }
                 else if(Math.round(value)==4){
                     sirenSpeed=0.13;
                     toySpeed=0.04;
+                    particleSystem.direction1 = new BABYLON.Vector3(-12, -8, -12);
+                    particleSystem.direction2 = new BABYLON.Vector3(-12, -8, -12);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-9, -12, -9);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-9, -12, -9);
                 }
                 else if(Math.round(value)==5){
                     sirenSpeed=0.16;
                     toySpeed=0.06;
-                }     
+                    particleSystem.direction1 = new BABYLON.Vector3(-14, -8, -14);
+                    particleSystem.direction2 = new BABYLON.Vector3(-14, -8, -14);
+                    particleSystemRain.direction1 = new BABYLON.Vector3(-12, -12, -12);
+                    particleSystemRain.direction2 = new BABYLON.Vector3(-12, -12, -12);
+                }
+
+                if(Math.round(value) == 2 || Math.round(value) == 3){
+                    windTrack.setVolume(volumeLow);
+                } else if (Math.round(value) == 3 || Math.round(value) == 4 || Math.round(value) == 5){
+                    windTrack.setVolume(volumeHigh);
+                }
             }
         });
         panel.addControl(slider);    
@@ -573,9 +611,11 @@
         snowMaxSpeedslider.value = 0;
         snowMaxSpeedslider.height = "15px";
         snowMaxSpeedslider.width = "150px";
-        snowMaxSpeedslider.onValueChangedObservable.add(function(value) {
-            snowMaxSpeedheader.text = "snow max speed: " + Math.round(value) ;
-        });
+        snowMaxSpeedslider.background="green";
+        snowMaxSpeedslider.color="green";
+        // snowMaxSpeedslider.onValueChangedObservable.add(function(value) {
+        //     snowMaxSpeedheader.text = "snow max speed: " + Math.round(value) ;
+        // });
         snowMaxSpeedpanel.addControl(snowMaxSpeedslider);
         ////////////////
         var snowEmitRatepanel = new BABYLON.GUI.StackPanel();
@@ -596,9 +636,11 @@
         snowEmitRateslider.value = 0;
         snowEmitRateslider.height = "15px";
         snowEmitRateslider.width = "150px";
-        snowEmitRateslider.onValueChangedObservable.add(function(value) {
-            snowEmitRateheader.text = "snow emit rate: " + Math.round(value) ;
-        });
+        snowEmitRateslider.background="green";
+        snowEmitRateslider.color="green";
+        // snowEmitRateslider.onValueChangedObservable.add(function(value) {
+        //     snowEmitRateheader.text = "snow emit rate: " + Math.round(value) ;
+        // });
         snowEmitRatepanel.addControl(snowEmitRateslider);
 
         snowEmitRateslider.isVisible=false;
@@ -627,9 +669,11 @@
         rainMaxSpeedslider.value = 0;
         rainMaxSpeedslider.height = "15px";
         rainMaxSpeedslider.width = "150px";
-        rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
-            rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value) ;
-        });
+        rainMaxSpeedslider.color="green";
+        rainMaxSpeedslider.background="green";
+        // rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
+        //     rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value) ;
+        // });
         rainMaxSpeedpanel.addControl(rainMaxSpeedslider);
 
         rainMaxSpeedpanel.isVisible=false;
@@ -655,6 +699,8 @@
         fogThickSlider.value = 0;
         fogThickSlider.height = "15px";
         fogThickSlider.width = "150px";
+        fogThickSlider.background="green";
+        fogThickSlider.color="green";
         fogThickPanel.addControl(fogThickSlider);
 
         fogThickSlider.isVisible = false;
@@ -684,6 +730,8 @@
             }
             SPS.initParticles();
             SPS.setParticles();
+            dayTrack.setVolume(volumeLow);
+            nightTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonDaytime);
 
@@ -727,7 +775,6 @@
         buttonNight.onPointerUpObservable.add(function () {
             water.bumpHeight = 0.5; 
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.7);
-
             window.setTimeout(function () {
                 moon.isVisible=true;
                 ////////////////////// INI2//////////////////
@@ -750,6 +797,8 @@
                 SPS.initParticles();
                 SPS.setParticles();
             }, 900);
+            nightTrack.setVolume(volumeLow);
+            dayTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonNight);
 
@@ -758,7 +807,7 @@
         var buttonStopRain = BABYLON.GUI.Button.CreateSimpleButton("buttonStopRain", "stop rain");
         buttonStopRain.width = 0.05;
         buttonStopRain.height = 0.04;
-        buttonStopRain.top = "-15%";
+        buttonStopRain.top = "-10%";
        //uttonStopSnow.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
         buttonStopRain.left = "-40%";
         buttonStopRain.color = "white";
@@ -776,8 +825,72 @@
             rainMaxSpeedpanel.isVisible=false;
             rainMaxSpeedheader.isVisible=false;
             rainMaxSpeedslider.isVisible=false;
+            buttonLightningStrike.isVisible=false;
+            rainTrack.stop();
         });
         advancedTexture.addControl(buttonStopRain);
+
+        var buttonLightningStrike = BABYLON.GUI.Button.CreateSimpleButton("LightningStrike", "Lightning Strike");
+        buttonLightningStrike.width = 0.08;
+        buttonLightningStrike.height = 0.04;
+        buttonLightningStrike.top = "-15%";
+       //uttonStopSnow.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        buttonLightningStrike.left = "-40%";
+        buttonLightningStrike.color = "white";
+        buttonLightningStrike.fontSize = 14;
+        buttonLightningStrike.background = "green";
+        buttonLightningStrike.isVisible=false;
+        //var buttonEvt;
+        buttonLightningStrike.onPointerUpObservable.add(function () {
+            clearTimeout(stopLightning);
+            clearInterval(startLightning);
+            particleSystemLightning.emitter = skybox2;
+            particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 10,10); // Starting all from
+            particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 10,10); // To...
+            // thunderVolume= 0.1;
+            // thunderTrack.setVolume(thunderVolume);
+            thunderTrack.play();
+            startLightning = setInterval(function () {
+                
+                particleSystemLightning.start();
+                
+                stopLightning = setTimeout(function () {
+                    particleSystemLightning.stop();
+                }, 100);
+                
+            }, 1000);
+            // window.setTimeout(function () {
+            //     firePlane.isVisible=true;
+            // }, 2000);
+            window.setTimeout(function () {
+                //thunderVolume= 0;
+                thunderTrack.stop();
+                //thunderTrack.setVolume(thunderVolume);
+                firePlane.isVisible=true;
+                clearTimeout(stopLightning);
+                clearInterval(startLightning);
+
+                startLightning = setInterval(function () {
+                
+                    particleSystemLightning.start();
+                
+                    stopLightning = setTimeout(function () {
+                        particleSystemLightning.stop();
+                    }, 100);
+                }, 3000);
+                particleSystemLightning.emitter = skybox3;
+                particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 5,0); // Starting all from
+                particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); // To...
+
+            }, 4500);
+            // window.setTimeout(function () {
+            //    treeFall("rotation.z", tree.rotation.z, -(1.39626));
+            //    firePlane.scaling.x=70;
+            //    firePlane.scaling.y=20;
+
+            // }, 15000);
+        });
+        advancedTexture.addControl(buttonLightningStrike);
 
         var buttonRain = BABYLON.GUI.Button.CreateSimpleButton("buttonRain", "rain");
         buttonRain.width = 0.05;
@@ -793,6 +906,7 @@
 
             // Start the particle system
             particleSystemRain.start();
+            buttonLightningStrike.isVisible=true;
             buttonStopRain.isVisible=true;
             rainMaxSpeedpanel.isVisible=true;
             rainMaxSpeedheader.isVisible=true;
@@ -821,7 +935,7 @@
                 }, 100);
                 
             }, 3000);
-            /////////////
+            rainTrack.play();
         });
         advancedTexture.addControl(buttonRain);
 
@@ -979,11 +1093,8 @@
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
-            
             treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
-
             moon.isVisible=false;
-           
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     starPosition2(SPS.particles[p]);
@@ -991,6 +1102,11 @@
             }
             SPS.initParticles();
             SPS.setParticles();
+            treeFall("rotation.z", tree.rotation.z, Math.PI/180);
+            scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+            dayTrack.setVolume(volumeLow);
+            windTrack.setVolume(volumeNull);
+            nightTrack.setVolume(volumeNull);
             //groundMaterial.alpha = 0;
         });
         advancedTexture.addControl(resetbtn);
