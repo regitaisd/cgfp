@@ -2,14 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="wadsFp.css">
-    <script type="text/javascript" src="bootstrap/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
-    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 
     <title>fp</title>
     <script type="text/javascript" src="babylon.custom2.js"></script>
-    <script type="text/javascript" src="star.js"></script>
     <link rel="stylesheet" type="text/css" href="Canvas.css"/>
 </head>
 <body style="background-color: black;">
@@ -51,8 +46,6 @@
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
         ground.position.y = -2.05;
         ground.material = groundMaterial;
-
-        ///////////////// INI2 //////////////////////////////
 
         // custom position function for SPS creation
         var starPositionFront = function(particle, i, s) {
@@ -183,6 +176,7 @@
             rainMaxSpeedpanel.isVisible=true;
             rainMaxSpeedheader.isVisible=true;
             rainMaxSpeedslider.isVisible=true;
+            buttonSnow.isVisible=false;
 
             rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
                 rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
@@ -271,6 +265,7 @@
             rainMaxSpeedslider.isVisible=false;
             buttonLightningStrike.isVisible=false;
             rainTrack.stop();
+            buttonSnow.isVisible=true;
         };
 
         var startSnow = function(){
@@ -281,6 +276,7 @@
             snowEmitRateheader.isVisible=true;
             snowMaxSpeedpanel.isVisible=true;
             snowMaxSpeedheader.isVisible=true;
+            buttonRain.isVisible=false;
         
             // Start the particle system
             particleSystem.start();
@@ -308,6 +304,7 @@
             snowEmitRateheader.isVisible=false;
             snowMaxSpeedpanel.isVisible=false;
             snowMaxSpeedheader.isVisible=false;
+            buttonRain.isVisible=true;
         };
 
         var moon = BABYLON.Mesh.CreateSphere("boxCloud", 5, 11, scene);
