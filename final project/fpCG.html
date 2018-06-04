@@ -934,7 +934,22 @@
         buttonDaytime.fontSize = 16;
         buttonDaytime.background = "green";
         buttonDaytime.onPointerUpObservable.add(function () {
+
             daytimeFunction();
+            //SPS.dispose();
+            moon.isVisible=false; 
+            water.bumpHeight = 2; 
+            setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.3);
+            /////////////////////////// INI2 /////////////////
+            SPS.initParticles = function () {
+                for (var p = 0; p < SPS.nbParticles; p++) {
+                    starPosition2(SPS.particles[p]);
+                }
+            }
+            SPS.initParticles();
+            SPS.setParticles();
+            dayTrack.setVolume(volumeLow);
+            nightTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonDaytime);
 
@@ -966,6 +981,33 @@
  
         buttonNight.onPointerUpObservable.add(function () {
             nightFunction();
+
+            water.bumpHeight = 0.5; 
+            setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.7);
+            window.setTimeout(function () {
+                moon.isVisible=true;
+                ////////////////////// INI2//////////////////
+                SPS.initParticles = function () {
+                    for (var p = 0; p < SPS.nbParticles; p++) {
+                        var rand = Math.floor(Math.random() * (5 - (1) + 1)) + (1);
+
+                        if(rand==1)
+                            starPositionFront(SPS.particles[p]);
+                        else if(rand==2)
+                            starPositionBack(SPS.particles[p]);
+                        else if(rand==3)
+                            starPositionLeft(SPS.particles[p]);
+                        else if(rand==4)
+                            starPositionRight(SPS.particles[p]);
+                        else if(rand==5)
+                            starPositionUp(SPS.particles[p]);
+                    }
+                }
+                SPS.initParticles();
+                SPS.setParticles();
+            }, 900);
+            nightTrack.setVolume(volumeLow);
+            dayTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonNight);
 
@@ -984,6 +1026,17 @@
         //var buttonEvt;
         buttonStopRain.onPointerUpObservable.add(function () {
             stopRain();
+            buttonStopRain.isVisible=false;
+            // particleSystemLightning.isVisible=false;
+            particleSystemRain.stop();
+            clearTimeout(stopLightning);
+            clearInterval(startLightning);
+            particleSystemLightning.stop();
+            rainMaxSpeedpanel.isVisible=false;
+            rainMaxSpeedheader.isVisible=false;
+            rainMaxSpeedslider.isVisible=false;
+            rainTrack.stop();
+
         });
         advancedTexture.addControl(buttonStopRain);
 
@@ -1014,8 +1067,38 @@
         buttonRain.background = "green";
         //var buttonEvt;
         buttonRain.onPointerUpObservable.add(function () {
-
             startRain();
+            // Start the particle system
+            particleSystemRain.start();
+            buttonStopRain.isVisible=true;
+            rainMaxSpeedpanel.isVisible=true;
+            rainMaxSpeedheader.isVisible=true;
+            rainMaxSpeedslider.isVisible=true;
+
+            rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
+                rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
+                particleSystemRain.maxEmitPower = value;
+                particleSystemRain.minEmitPower =value;
+                if(9<Math.round(value)<14)
+                    particleSystemRain.emitRate=50000;
+                else if(13<Math.round(value)<20)
+                    particleSystemRain.emitRate=70000;
+                else if(19<Math.round(value)<30)
+                    particleSystemRain.emitRate=90000;
+                else if(29<Math.round(value)<46)
+                    particleSystemRain.emitRate=150000;
+            });
+
+            startLightning = setInterval(function () {
+                
+                particleSystemLightning.start();
+                
+                stopLightning = setTimeout(function () {
+                    particleSystemLightning.stop();
+                }, 100);
+                
+            }, 3000);
+            rainTrack.play();
         });
         advancedTexture.addControl(buttonRain);
 
@@ -1109,6 +1192,16 @@
             groundMaterial.diffuseTexture.vScale = 6;
             treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
             //scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+            moon.isVisible=false;
+            SPS.initParticles = function () {
+                for (var p = 0; p < SPS.nbParticles; p++) {
+                    starPosition2(SPS.particles[p]);
+                }
+            }
+            SPS.initParticles();
+            SPS.setParticles();
+            treeFall("rotation.z", tree.rotation.z, Math.PI/180);
+            scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
             dayTrack.setVolume(volumeLow);
             windTrack.setVolume(volumeNull);
             nightTrack.setVolume(volumeNull);
