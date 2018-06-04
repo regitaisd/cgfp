@@ -180,8 +180,6 @@
             rainMaxSpeedpanel.isVisible=true;
             rainMaxSpeedheader.isVisible=true;
             rainMaxSpeedslider.isVisible=true;
-            buttonSnow.isVisible=false;
-            buttonFog.isVisible=false;
 
             rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
                 rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
@@ -233,6 +231,7 @@
             window.setTimeout(function () {
                 thunderTrack.stop();
                 firePlane.isVisible=true;
+                buttonLightningStrike.isVisible=false;
                 fireAnimation("scaling.y", firePlane.scaling.y, 50);
                 fireAnimation("scaling.x", firePlane.scaling.x, 20);
                 clearTimeout(stopLightning);
@@ -252,15 +251,34 @@
 
             }, 4500);
             window.setTimeout(function () {
+               treeFall("rotation.z", tree.rotation.z, -(1.39626));
+               fireAnimation("scaling.y", firePlane.scaling.y, 30);
+               fireAnimation("scaling.x", firePlane.scaling.x, 100);
+            }, 7000);
+            window.setTimeout(function () {
                //treeFall("rotation.z", tree.rotation.z, -(1.39626));
                fireAnimation("scaling.y", firePlane.scaling.y, 0);
                fireAnimation("scaling.x", firePlane.scaling.x, 0);
+               buttonLightningStrike.isVisible=true;
                //firePlane.isVisible=false;
-            }, 15000);
+            }, 20000);
         };
         
         var stopRain = function(){
-        	buttonStopRain.isVisible=false;
+        	// buttonStopRain.isVisible=false;
+         //    particleSystemRain.stop();
+         //    clearTimeout(stopLightning);
+         //    clearInterval(startLightning);
+         //    particleSystemLightning.stop();
+         //    rainMaxSpeedpanel.isVisible=false;
+         //    rainMaxSpeedheader.isVisible=false;
+         //    rainMaxSpeedslider.isVisible=false;
+         //    buttonLightningStrike.isVisible=false;
+         //    rainTrack.stop();
+            buttonSnow.isVisible=true;
+            buttonFog.isVisible=true;
+
+            // particleSystemLightning.isVisible=false;
             particleSystemRain.stop();
             clearTimeout(stopLightning);
             clearInterval(startLightning);
@@ -270,8 +288,6 @@
             rainMaxSpeedslider.isVisible=false;
             buttonLightningStrike.isVisible=false;
             rainTrack.stop();
-            buttonSnow.isVisible=true;
-            buttonFog.isVisible=true;
         };
 
         var startSnow = function(){
@@ -578,6 +594,7 @@
         var volumeLow = 0.2;
         var volumeHigh = 0.4;
         riverTrack.setVolume(volumeVeryLow);
+        thunderTrack.setVolume(volumeVeryLow);
         windTrack.setVolume(volumeNull);
         dayTrack.setVolume(volumeLow);
         nightTrack.setVolume(volumeNull);
@@ -1025,17 +1042,8 @@
         buttonStopRain.isVisible=false;
         //var buttonEvt;
         buttonStopRain.onPointerUpObservable.add(function () {
-            stopRain();
             buttonStopRain.isVisible=false;
-            // particleSystemLightning.isVisible=false;
-            particleSystemRain.stop();
-            clearTimeout(stopLightning);
-            clearInterval(startLightning);
-            particleSystemLightning.stop();
-            rainMaxSpeedpanel.isVisible=false;
-            rainMaxSpeedheader.isVisible=false;
-            rainMaxSpeedslider.isVisible=false;
-            rainTrack.stop();
+            stopRain();
 
         });
         advancedTexture.addControl(buttonStopRain);
@@ -1068,37 +1076,6 @@
         //var buttonEvt;
         buttonRain.onPointerUpObservable.add(function () {
             startRain();
-            // Start the particle system
-            particleSystemRain.start();
-            buttonStopRain.isVisible=true;
-            rainMaxSpeedpanel.isVisible=true;
-            rainMaxSpeedheader.isVisible=true;
-            rainMaxSpeedslider.isVisible=true;
-
-            rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
-                rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
-                particleSystemRain.maxEmitPower = value;
-                particleSystemRain.minEmitPower =value;
-                if(9<Math.round(value)<14)
-                    particleSystemRain.emitRate=50000;
-                else if(13<Math.round(value)<20)
-                    particleSystemRain.emitRate=70000;
-                else if(19<Math.round(value)<30)
-                    particleSystemRain.emitRate=90000;
-                else if(29<Math.round(value)<46)
-                    particleSystemRain.emitRate=150000;
-            });
-
-            startLightning = setInterval(function () {
-                
-                particleSystemLightning.start();
-                
-                stopLightning = setTimeout(function () {
-                    particleSystemLightning.stop();
-                }, 100);
-                
-            }, 3000);
-            rainTrack.play();
         });
         advancedTexture.addControl(buttonRain);
 
