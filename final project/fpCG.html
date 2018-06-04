@@ -148,6 +148,8 @@
             fogThickPanel.isVisible = true;
             fogThickHeader.isVisible = true;
             fogThickSlider.isVisible = true;
+            buttonSnow.isVisible=false;
+            buttonRain.isVisible=false;
             scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
             //scene.fogStart = 20.0;
             //scene.fogEnd = 60.0;
@@ -166,6 +168,8 @@
             fogThickPanel.isVisible = false;
             fogThickHeader.isVisible = false;
             fogThickSlider.isVisible = false;
+            buttonSnow.isVisible=true;
+            buttonRain.isVisible=true;
         };
 
         var startRain = function(){
@@ -177,6 +181,7 @@
             rainMaxSpeedheader.isVisible=true;
             rainMaxSpeedslider.isVisible=true;
             buttonSnow.isVisible=false;
+            buttonFog.isVisible=false;
 
             rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
                 rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
@@ -226,10 +231,10 @@
             //     firePlane.isVisible=true;
             // }, 2000);
             window.setTimeout(function () {
-                //thunderVolume= 0;
                 thunderTrack.stop();
-                //thunderTrack.setVolume(thunderVolume);
                 firePlane.isVisible=true;
+                fireAnimation("scaling.y", firePlane.scaling.y, 50);
+                fireAnimation("scaling.x", firePlane.scaling.x, 20);
                 clearTimeout(stopLightning);
                 clearInterval(startLightning);
 
@@ -246,12 +251,12 @@
                 particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); // To...
 
             }, 4500);
-            // window.setTimeout(function () {
-            //    treeFall("rotation.z", tree.rotation.z, -(1.39626));
-            //    firePlane.scaling.x=70;
-            //    firePlane.scaling.y=20;
-
-            // }, 15000);
+            window.setTimeout(function () {
+               //treeFall("rotation.z", tree.rotation.z, -(1.39626));
+               fireAnimation("scaling.y", firePlane.scaling.y, 0);
+               fireAnimation("scaling.x", firePlane.scaling.x, 0);
+               //firePlane.isVisible=false;
+            }, 15000);
         };
         
         var stopRain = function(){
@@ -266,6 +271,7 @@
             buttonLightningStrike.isVisible=false;
             rainTrack.stop();
             buttonSnow.isVisible=true;
+            buttonFog.isVisible=true;
         };
 
         var startSnow = function(){
@@ -277,6 +283,7 @@
             snowMaxSpeedpanel.isVisible=true;
             snowMaxSpeedheader.isVisible=true;
             buttonRain.isVisible=false;
+            buttonFog.isVisible=false;
         
             // Start the particle system
             particleSystem.start();
@@ -305,6 +312,7 @@
             snowMaxSpeedpanel.isVisible=false;
             snowMaxSpeedheader.isVisible=false;
             buttonRain.isVisible=true;
+            buttonFog.isVisible=true;
         };
 
         var moon = BABYLON.Mesh.CreateSphere("boxCloud", 5, 11, scene);
@@ -710,11 +718,29 @@
 
         firePlane = BABYLON.Mesh.CreatePlane("fireplane", 1.5, scene);
         firePlane.position = treeMove.position;
-        firePlane.scaling.x = 20;
-        firePlane.scaling.y = 50
+        firePlane.scaling.x = 0;
+        firePlane.scaling.y = 0;
         firePlane.isVisible=false;
 
         firePlane.material = fire;
+
+        var fireAnimation = function (property, from, to) {
+            var keys = [
+                { 
+                    frame: 0, 
+                    value: from 
+                },
+                { 
+                    frame: 5, 
+                    value: to 
+                }
+            ];
+        
+            var animation = new BABYLON.Animation("animation", property, 5, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            animation.setKeys(keys);
+        
+            scene.beginDirectAnimation(firePlane, [animation], 0, 5, true);
+        };
         ///////////////////
 
 
@@ -1189,6 +1215,9 @@
             stopRain();
             //stop snow
             stopSnow();
+            //stop fire
+            fireAnimation("scaling.y", firePlane.scaling.y, 0);
+            fireAnimation("scaling.x", firePlane.scaling.x, 0);
         });
         advancedTexture.addControl(resetbtn);
 
