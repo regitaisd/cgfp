@@ -1,1 +1,1 @@
-# cgfp
+Computer Graphics final project
