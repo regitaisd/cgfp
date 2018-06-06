@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-
     <title>fp</title>
     <script type="text/javascript" src="babylon.custom2.js"></script>
     <link rel="stylesheet" type="text/css" href="Canvas.css"/>
 </head>
 <body style="background-color: black;">
-
 <canvas id="renderCanvas"></canvas>
 <script>
     var canvas; 
@@ -30,7 +28,7 @@
 
         // Camera
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(5, 12, -125), scene);
-        camera.setTarget(BABYLON.Vector3.Zero());
+        //camera.setTarget(BABYLON.Vector3.Zero());
         camera.attachControl(canvas, true);
     
         // Light
@@ -47,7 +45,7 @@
         ground.position.y = -2.05;
         ground.material = groundMaterial;
 
-        // custom position function for SPS creation
+        // positions for the star
         var starPositionFront = function(particle, i, s) {
             particle.position.x = Math.floor(Math.random() * (325 - (-350) + 1)) + (-350);
             particle.position.y = Math.floor(Math.random() * (200 - (0) + 1)) + (0);
@@ -84,12 +82,15 @@
             particle.position.z = 100;
         };
 
+        // FUNCTIONS //
+        // daytime
         var daytimeFunction = function(){
-        	//SPS.dispose();
+            //make the moon invisible
             moon.isVisible=false; 
             water.bumpHeight = 2; 
+            //set sun to daytime
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.3);
-            /////////////////////////// INI2 /////////////////
+            //set position to be not in the sky
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     starPosition2(SPS.particles[p]);
@@ -97,14 +98,17 @@
             }
             SPS.initParticles();
             SPS.setParticles();
-            dayTrack.setVolume(volumeLow);
+
+            dayTrack.setVolume(volumeVeryLow);
             nightTrack.setVolume(volumeNull);
         };
        	var sunsetFunction = function(){
        		water.bumpHeight = 0.5; 
+            //set sun position
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.5);
+            //make moon invisible
             moon.isVisible=false;
-           
+           //set star position
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     starPosition2(SPS.particles[p]);
@@ -112,15 +116,19 @@
             }
             SPS.initParticles();
             SPS.setParticles();
-           // SPS.dispose();
+
+           dayTrack.setVolume(volumeNull);
+           nightTrack.setVolume(volumeNull);
        	};
 
+        // night
        	var nightFunction = function(){
        		water.bumpHeight = 0.5; 
+            //set sun position
             setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.7);
             window.setTimeout(function () {
                 moon.isVisible=true;
-                ////////////////////// INI2//////////////////
+                //Init particles : set their positions, colors, uvs, age, etc
                 SPS.initParticles = function () {
                     for (var p = 0; p < SPS.nbParticles; p++) {
                         var rand = Math.floor(Math.random() * (5 - (1) + 1)) + (1);
@@ -138,11 +146,14 @@
                     }
                 }
                 SPS.initParticles();
-                SPS.setParticles();
+                SPS.setParticles(); //to update the SPS mesh 
             }, 900);
-            nightTrack.setVolume(volumeLow);
+            nightTrack.setVolume(volumeVeryLow);
             dayTrack.setVolume(volumeNull);
        	};
+
+        // fog
+        //babylonjs has its own fog feature
         var startFog = function(){
         	buttonStopFog.isVisible = true;
             fogThickPanel.isVisible = true;
@@ -151,14 +162,13 @@
             buttonSnow.isVisible=false;
             buttonRain.isVisible=false;
             scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
-            //scene.fogStart = 20.0;
-            //scene.fogEnd = 60.0;
             scene.fogColor = new BABYLON.Color3(0.91, 0.90, 0.93);
             scene.fogDensity = fogThickSlider.value;
             var fogAlpha = 0;
             fogThickSlider.onValueChangedObservable.add(function(value){
+                //the density of the fog is adjusted to the slider's value
                 scene.fogDensity = value;
-                fogThickHeader.text = "fog thickness: " + scene.fogDensity;
+                fogThickHeader.text =  "fog thickness: " + scene.fogDensity.toFixed(2);
             });
         };
 
@@ -172,15 +182,19 @@
             buttonRain.isVisible=true;
         };
 
+        // rain
         var startRain = function(){
         	// Start the particle system
             particleSystemRain.start();
+
             buttonLightningStrike.isVisible=true;
             buttonStopRain.isVisible=true;
             rainMaxSpeedpanel.isVisible=true;
             rainMaxSpeedheader.isVisible=true;
             rainMaxSpeedslider.isVisible=true;
-
+            buttonSnow.isVisible=false;
+            buttonFog.isVisible=false;
+            // control rain heaviness with BABYLON GUI SLIDER
             rainMaxSpeedslider.onValueChangedObservable.add(function(value) {
                 rainMaxSpeedheader.text = "rain heaviness: " + Math.round(value);
                 particleSystemRain.maxEmitPower = value;
@@ -194,7 +208,7 @@
                 else if(29<Math.round(value)<46)
                     particleSystemRain.emitRate=150000;
             });
-
+            //Start lightning particle,make lightning appear and dissapear every certain amount of time
             startLightning = setInterval(function () {
                 
                 particleSystemLightning.start();
@@ -208,14 +222,17 @@
         };
 
         var lightningStrike = function(){
+            //clear the previously use timeout and time inrerval
         	clearTimeout(stopLightning);
             clearInterval(startLightning);
+            //change the particle emmitter to be closer to the camera
             particleSystemLightning.emitter = skybox2;
-            particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 10,10); // Starting all from
-            particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 10,10); // To...
-            // thunderVolume= 0.1;
-            // thunderTrack.setVolume(thunderVolume);
+            particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 10,10); 
+            particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 10,10); 
+
             thunderTrack.play();
+            thunderTrack.setVolume(volumeLow);
+            //make lightning appear and dissapear every certain amount of time
             startLightning = setInterval(function () {
                 
                 particleSystemLightning.start();
@@ -225,15 +242,16 @@
                 }, 100);
                 
             }, 1000);
-            // window.setTimeout(function () {
-            //     firePlane.isVisible=true;
-            // }, 2000);
+
             window.setTimeout(function () {
                 thunderTrack.stop();
+                fireTrack.play();
+                fireTrack.setVolume(volumeLow);
+                //make fire visible and play animation to make fire bigegr
                 firePlane.isVisible=true;
-                buttonLightningStrike.isVisible=false;
                 fireAnimation("scaling.y", firePlane.scaling.y, 50);
                 fireAnimation("scaling.x", firePlane.scaling.x, 20);
+                //make lighting to appear and dissapear slower
                 clearTimeout(stopLightning);
                 clearInterval(startLightning);
 
@@ -245,49 +263,49 @@
                         particleSystemLightning.stop();
                     }, 100);
                 }, 3000);
+                //make lightning appear further from camera
                 particleSystemLightning.emitter = skybox3;
                 particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 5,0); // Starting all from
                 particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); // To...
 
             }, 4500);
+
+            //make tree fall down and spread fire further
             window.setTimeout(function () {
+               treeTrack.play();
                treeFall("rotation.z", tree.rotation.z, -(1.39626));
                fireAnimation("scaling.y", firePlane.scaling.y, 30);
                fireAnimation("scaling.x", firePlane.scaling.x, 100);
             }, 7000);
+            //make fire dissapear gradually
             window.setTimeout(function () {
-               //treeFall("rotation.z", tree.rotation.z, -(1.39626));
                fireAnimation("scaling.y", firePlane.scaling.y, 0);
                fireAnimation("scaling.x", firePlane.scaling.x, 0);
-               buttonLightningStrike.isVisible=true;
-               //firePlane.isVisible=false;
+               fireTrack.stop();
             }, 20000);
         };
         
         var stopRain = function(){
-        	// buttonStopRain.isVisible=false;
-         //    particleSystemRain.stop();
-         //    clearTimeout(stopLightning);
-         //    clearInterval(startLightning);
-         //    particleSystemLightning.stop();
-         //    rainMaxSpeedpanel.isVisible=false;
-         //    rainMaxSpeedheader.isVisible=false;
-         //    rainMaxSpeedslider.isVisible=false;
-         //    buttonLightningStrike.isVisible=false;
-         //    rainTrack.stop();
+
             buttonSnow.isVisible=true;
             buttonFog.isVisible=true;
+            buttonStopRain.isVisible=false;
 
-            // particleSystemLightning.isVisible=false;
             particleSystemRain.stop();
+
             clearTimeout(stopLightning);
             clearInterval(startLightning);
+
             particleSystemLightning.stop();
             rainMaxSpeedpanel.isVisible=false;
+
             rainMaxSpeedheader.isVisible=false;
             rainMaxSpeedslider.isVisible=false;
-            buttonLightningStrike.isVisible=false;
-            rainTrack.stop();
+            buttonLightningStrike.isVisible = false;
+
+            window.setTimeout(function (){
+                rainTrack.stop();
+            }, 1000);
         };
 
         var startSnow = function(){
@@ -304,6 +322,7 @@
             // Start the particle system
             particleSystem.start();
 
+            //control snow emmit rate and speed through BABYLON GUI slider
             snowMaxSpeedslider.onValueChangedObservable.add(function(value) {
                 snowMaxSpeedheader.text = "snow max speed: " + Math.round(value);
                 particleSystem.maxEmitPower = value;
@@ -312,15 +331,19 @@
                 snowEmitRateheader.text = "snow emit rate: " + Math.round(value) ;
                 particleSystem.emitRate = value;
             });
+
+            //change ground texture
             window.setTimeout(function () {
                 groundMaterial.diffuseTexture = new BABYLON.Texture("textures/snow.jpg", scene);
-                // groundMaterial.alpha = 0.4;
             }, 10000);
+
         };
 
         var stopSnow = function(){
         	buttonStopSnow.isVisible=false;
+
             particleSystem.stop();
+
             snowEmitRateslider.isVisible=false;
             snowMaxSpeedslider.isVisible=false;
             snowEmitRatepanel.isVisible=false;
@@ -331,6 +354,7 @@
             buttonFog.isVisible=true;
         };
 
+        // moon
         var moon = BABYLON.Mesh.CreateSphere("boxCloud", 5, 11, scene);
         moon.position = new BABYLON.Vector3(0, 40, 90);
 
@@ -343,32 +367,29 @@
         moon.material = starMoonMaterial;
         moon.isVisible=false;
 
+        // stars
         var star = BABYLON.Mesh.CreateSphere("boxCloud", 6, 1, scene);
         star.material = starMoonMaterial;
   
-        // SPS creation
+        // create solid particle
         var SPS = new BABYLON.SolidParticleSystem('SPS', scene);
+        // make star as solid particle
         SPS.addShape(star, 1000);
+        //build the solod particle
         var mesh = SPS.buildMesh();
         // dispose the model
         star.dispose();
-        ////////////////////////////////////////////////////////////////////
 
         // Sky material
         var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
         skyboxMaterial.backFaceCulling = false;
-        //skyboxMaterial._cachedDefines.FOG = true;
 
         // Sky mesh (box)
         var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
         skybox.position = new BABYLON.Vector3(0, 75, 0);
         skybox.material = skyboxMaterial;
 
-
-        var skybox2 = BABYLON.Mesh.CreatePlane("sky", 1000.0, scene);
-        skybox2.position = new BABYLON.Vector3(0, 75, 0);
-        skybox2.isVisible=false;
-    
+        //sky animation
         var setSkyConfig = function (property, from, to) {
             var keys = [
                 { 
@@ -384,17 +405,17 @@
             var animation = new BABYLON.Animation("animation", property, 5, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setKeys(keys);
         
-            scene.stopAnimation(skybox);
             scene.beginDirectAnimation(skybox, [animation], 0, 5, true);
         };
     
 
-        // set to daytime
+        // set to daytime , change the sun inclanation with animation
         setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.2);
 
 
-       // MODEL //
+        // MODELS //
 
+        // windmill
         var walls = BABYLON.Mesh.CreateBox("walls", 20, scene);
         walls.position = new BABYLON.Vector3(82, 10, 38);
         walls.scaling.x=0.7;
@@ -405,19 +426,20 @@
         wallsMaterial.diffuseTexture = new BABYLON.Texture("textures/brick.jpg", scene);
         walls.material = wallsMaterial;
 
+        //slider for the wind
         var slider = new BABYLON.GUI.Slider();
-        //var speed= slider.value;
+
         var sirenSpeed = 0.01;
         var siren = new BABYLON.Mesh.CreateBox("siren", 1.0, scene);
         siren.actionManager = new BABYLON.ActionManager(scene);
-
+        //make windmill turn faster every click
         siren.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
             if(sirenSpeed<0.1)
                 sirenSpeed=sirenSpeed+0.02;
             else
                 sirenSpeed=0.01;
         }));
-
+        //import the windmill
         BABYLON.SceneLoader.ImportMesh("", "rotor/", "Rotor8_fixed.stl", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = siren;
@@ -429,32 +451,29 @@
                 siren.scaling.x=siren.scaling.x-0.3;
                 siren.scaling.y=siren.scaling.y-0.3;
                 siren.scaling.z=siren.scaling.z-0.3;
-                //robotMain.scaling.y=10;
             }
         });
 
+        // swing
         var toy = new BABYLON.Mesh.CreateBox("toy", 1.0, scene);
         var toySpeed = 0;
+        //import the toy model
         BABYLON.SceneLoader.ImportMesh("", "swing/", "Cadnav.com_B0419142.obj", scene, function(newMeshes){
             for(i = 0; i <newMeshes.length; i++){
                 newMeshes[i].parent = toy;
                 toy.position.z=30;
-                // toy.position.y=30;
-                // toy.position.x=80;
-               // toy.rotation.x = 1.57;
 
                  newMeshes[i].scaling.x= newMeshes[i].scaling.x-0.7;
                  newMeshes[i].scaling.y= newMeshes[i].scaling.y-0.7;
                  newMeshes[i].scaling.z= newMeshes[i].scaling.z-0.7;
-                //robotMain.scaling.y=10;
             }
         });
 
-
+        // bridge
         var bridge = new BABYLON.Mesh.CreateBox("bridge", 1.0, scene);
         bridge.isVisible=false;
         bridge.actionManager = new BABYLON.ActionManager(scene);
-
+        //IMPORT bride model
         BABYLON.SceneLoader.ImportMesh("", "bridge/", "bridge2.babylon", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = bridge;
@@ -470,20 +489,13 @@
             }
         });
 
-
+        // house
         var house = new BABYLON.Mesh.CreateBox("house", 1.0, scene);
         house.isVisible=false;
         house.actionManager = new BABYLON.ActionManager(scene);
-
+        //import house model
         BABYLON.SceneLoader.ImportMesh("", "house/", "medieval-house-2.babylon", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
-                /*newMeshes[i].position.z=newMeshes[i].position.z+5;
-                newMeshes[i].position.y=newMeshes[i].position.y+5;
-                newMeshes[i].position.x=newMeshes[i].position.x-15;
-                newMeshes[i].rotation.y = 3;
-                newMeshes[i].scaling.x=newMeshes[i].scaling.x+1;
-                newMeshes[i].scaling.y=newMeshes[i].scaling.y+1;
-                newMeshes[i].scaling.z=newMeshes[i].scaling.z+1;*/
 
                 newMeshes[i].parent = house;
                 house.position.z=90;
@@ -497,18 +509,14 @@
                 
             }
         });
-        ////////////
+
+        // tree
         var tree = new BABYLON.Mesh.CreateBox("tree", 1.0, scene);
         tree.isVisible=false;
-        //tree.actionManager = new BABYLON.ActionManager(scene);
-
+        //import tree model
         BABYLON.SceneLoader.ImportMesh("", "tree/", "D0406452B25.obj", scene, function(newMeshes){
             for(i = 0; i < newMeshes.length; i++){
                 newMeshes[i].parent = tree;
-                // tree.position.z=15;
-                //tree.position.y=-6;
-                // tree.position.x=-25;
-                 // tree.rotation.y = Math.PI/2;
 
                 tree.scaling.x=tree.scaling.x;
                 tree.scaling.y=tree.scaling.y;
@@ -518,15 +526,18 @@
         });
         tree.position.z=15;
         tree.position.x=-55;
+
         var treeMove = new BABYLON.Mesh.CreateBox("treeMove", 4.0, scene);
         treeMove.position.x=tree.position.x+4.4;
         treeMove.position.z=tree.position.z+2;
         treeMove.position.y=tree.position.y+3;
+
         var treeMoveMaterial = new BABYLON.StandardMaterial("treeMoveMat", scene);
         treeMove.material=treeMoveMaterial;
         treeMoveMaterial.alpha=0;
         treeMove.actionManager = new BABYLON.ActionManager(scene);
 
+        //tree falling animation
         var treeFall = function (property, from, to) {
             var keys = [
                 { 
@@ -544,32 +555,31 @@
         
             scene.beginDirectAnimation(tree, [animation], 0, 5, true);
         };
-        
+        //make tree fall if clicked
         treeMove.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickUpTrigger, function () {
             treeFall("rotation.z", tree.rotation.z, -(1.39626));
+            treeTrack.play();
         }));
-        /////////////
+        
 
-       // Water
+        // WATER //
+
         var river = BABYLON.Mesh.CreatePlane("test", 100, scene); 
         river.rotation.x = Math.PI/2;
-        //waterMesh1.rotation.x += Math.PI/2;
     
         var water = new BABYLON.WaterMaterial("water", scene)
         water.backFaceCulling = true;
         water.bumpTexture = new BABYLON.Texture("textures/water4.jpg", scene);
-        water.windForce = -5; // arus nya kencengin disini /Represents the wind force applied on the water surface
-        //water.windForce = slider.value;
+        water.windForce = -5; //Represents the wind force applied on the water surface
         water.waveHeight = 0.1;// Represents the height of the waves
         water.bumpHeight = 2; 
         water.waveLength = 0.5;
 
-        river.scaling.y=0.7; // ukuran lebar
-        river.scaling.x=5; // ukuran panjang
-        river.position.z = -30; //deket jauhnya ke dpan belakang (kalo mo jauhan/deketan ke camera)
-        //waterMesh1.alpha=0.5;
+        river.scaling.y=0.7; // river width
+        river.scaling.x=5; // river length
+        river.position.z = -30; //river z position
         water.colorBlendFactor = 0;
-        water.windDirection = new BABYLON.Vector2(-0.8, 0.4);// atur arah arus bisa disini
+        water.windDirection = new BABYLON.Vector2(-0.8, 0.4);
 
         water.addToRenderList(skybox);
         water.addToRenderList(ground);
@@ -581,57 +591,65 @@
     
         river.material = water;
 
-        //SOUND EFFECTS
+        // SOUND EFFECTS //
         var riverTrack = new BABYLON.Sound("Water", "sound/water.mp3", scene, null, {loop: true, autoplay: true});
         var rainTrack = new BABYLON.Sound("Rain", "sound/rain2.mp3", scene, null, {loop: true, autoplay: false});
         var thunderTrack = new BABYLON.Sound("thunder", "sound/thunder2.mp3", scene, null, {loop: true, autoplay: false});
+        var fireTrack = new BABYLON.Sound("Fire", "sound/fire.mp3", scene, null, {loop: true, autoplay: false});
+        var treeTrack = new BABYLON.Sound("Tree falling", "sound/Tree falling.wav", scene, null, {loop: false, autoplay: false});
+        //var snowTrack = new BABYLON.Sound("Snow", "sound/snow.mp3", scene, null, {loop: true, autoplay: false});
         //var heavyRainTrack = new BABYLON.Sound("Heavy Rain", "sound/heavy-rain.mp3", scene, null, {loop: true, autoplay: false});
         var windTrack = new BABYLON.Sound("Wind", "sound/wind.mp3", scene, null, {loop:true, autoplay: true});
         var dayTrack = new BABYLON.Sound("Day", "sound/day.mp3", scene, null, {loop: true, autoplay: true});
         var nightTrack = new BABYLON.Sound("Night", "sound/night.mp3", scene, null, {loop: true, autoplay: true});
+        // volume
         var volumeNull = 0;
-        var volumeVeryLow = 0.1;
-        var volumeLow = 0.2;
-        var volumeHigh = 0.4;
+        var volumeVeryLow = 0.05;
+        var volumeLow = 0.1;
+        var volumeHigh = 0.3;
         riverTrack.setVolume(volumeVeryLow);
-        thunderTrack.setVolume(volumeVeryLow);
         windTrack.setVolume(volumeNull);
-        dayTrack.setVolume(volumeLow);
+        dayTrack.setVolume(volumeVeryLow);
         nightTrack.setVolume(volumeNull);
         riverTrack.play();
         windTrack.play();
         dayTrack.play();
         nightTrack.play();
 
+        var skybox2 = BABYLON.Mesh.CreatePlane("sky", 1000.0, scene);
+        skybox2.position = new BABYLON.Vector3(0, 75, 0);
+        skybox2.isVisible=false;
+
+        // PARTICLE SYSTEM //
+
+        // snow
         // Create a particle system
         var particleSystem = new BABYLON.ParticleSystem("particles", 50000, scene);
 
-        //Texture of each particle
+        //Texture pf the particle
         particleSystem.particleTexture = new BABYLON.Texture("textures/flare.png", scene);
 
         // Where the particles come from
-        particleSystem.emitter = skybox2; // the starting object, the emitter
-        particleSystem.minEmitBox = new BABYLON.Vector3(-200, 0, -250); // Starting all from
-        particleSystem.maxEmitBox = new BABYLON.Vector3(200, 0, 75); // To...
+        particleSystem.emitter = skybox2; 
+        particleSystem.minEmitBox = new BABYLON.Vector3(-200, 0, -250); 
+        particleSystem.maxEmitBox = new BABYLON.Vector3(200, 0, 75); 
 
-        // Size of each particle (random between...
+        // particle size
         particleSystem.minSize = 0.5;
         particleSystem.maxSize = 0.8;
 
-        // Life time of each particle (random between...
+        // particle lifetime
         particleSystem.minLifeTime = 4;
         particleSystem.maxLifeTime = 15;
 
-        // Emission rate
+        // particle emmision rate
         particleSystem.emitRate = 15000;
 
-        // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
+        // can be BLENDMODE_ONEONE, or BLENDMODE_STANDARD
         particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
 
-        // Set the gravity of all particles
         particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
 
-        // Direction of each particle after it has been emitted
         particleSystem.direction1 = new BABYLON.Vector3(-7, -8, 3);
         particleSystem.direction2 = new BABYLON.Vector3(7, -8, -3);
 
@@ -640,93 +658,77 @@
         particleSystem.maxEmitPower = 3;
         particleSystem.updateSpeed = 0.005;
 
-        ////////////////////////
+        // raindrops
         // Create a particle system
         var particleSystemRain = new BABYLON.ParticleSystem("particles", 25000, scene);
 
         //Texture of each particle
         particleSystemRain.particleTexture = new BABYLON.Texture("textures/rain.jpg", scene);
 
-        // Where the particles come from
-        particleSystemRain.emitter = skybox2; // the starting object, the emitter
-        particleSystemRain.minEmitBox = new BABYLON.Vector3(-200, 0, -250); // Starting all from
-        particleSystemRain.maxEmitBox = new BABYLON.Vector3(200, 0, 75); // To...
+        particleSystemRain.emitter = skybox2; 
+        particleSystemRain.minEmitBox = new BABYLON.Vector3(-200, 0, -250); 
+        particleSystemRain.maxEmitBox = new BABYLON.Vector3(200, 0, 75); 
 
-        // Colors of all particles
+        // make the color kinda blue
         particleSystemRain.color1 = new BABYLON.Color4(24, 112, 199,1);
         particleSystemRain.color2 = new BABYLON.Color4(24, 112, 199,1);
         particleSystemRain.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
 
-        // Size of each particle (random between...
+
         particleSystemRain.minSize = 0.2;
         particleSystemRain.maxSize = 0.3;
 
-        // Life time of each particle (random between...
         particleSystemRain.minLifeTime = 0.3;
         particleSystemRain.maxLifeTime = 15;
 
-        // Emission rate
         particleSystemRain.emitRate = 50000;
 
-        // Blend mode : BLENDMODE_ONEONE, or BLENDMODE_STANDARD
         particleSystemRain.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
 
-        // Set the gravity of all particles
         particleSystemRain.gravity = new BABYLON.Vector3(0, -9.81, 0);
 
-        // Direction of each particle after it has been emitted
         particleSystemRain.direction1 = new BABYLON.Vector3(-2, -12, 3);
         particleSystemRain.direction2 = new BABYLON.Vector3(2, -12, -3);
 
-        // Speed
         particleSystemRain.minEmitPower =10;
         particleSystemRain.maxEmitPower = 14;
         particleSystemRain.updateSpeed = 0.005;
-        /////////////////////////
+
 
         var skybox3 = BABYLON.Mesh.CreatePlane("sky", 1000.0, scene);
         skybox3.position = new BABYLON.Vector3(0, 75, 300);
         skybox3.isVisible=false;
-        // Create a particle system
+
+        // lightning
         var particleSystemLightning = new BABYLON.ParticleSystem("particles", 1, scene);
         
-        //Texture of eLightningach particle
         particleSystemLightning.particleTexture = new BABYLON.Texture("textures/lightning2.jpg", scene);
-        // Where the pLightningarticles come from
-        particleSystemLightning.emitter = skybox3; // the starting object, the emitter
-        particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 5,0); // Starting all from
-        particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); // To...
+
+        particleSystemLightning.emitter = skybox3; 
+        particleSystemLightning.minEmitBox = new BABYLON.Vector3(0, 5,0); 
+        particleSystemLightning.maxEmitBox = new BABYLON.Vector3(0, 5,0); 
         
-        // Size of eacLightningh particle (random between...
         particleSystemLightning.minSize = 500;
         particleSystemLightning.maxSize = 500;
         
-        // Life time oLightningf each particle (random between...
         particleSystemLightning.minLifeTime = 1.3;
         particleSystemLightning.maxLifeTime = 2.5;
         
-        // Emission raLightningte
         particleSystemLightning.emitRate = 1;
         
-        // Blend mode Lightning: BLENDMODE_ONEONE, or BLENDMODE_STANDARD
         particleSystemLightning.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
         
-         // Set the grLightningavity of all particles
         particleSystemLightning.gravity = new BABYLON.Vector3(0, 0, 0);
         
-        // Direction oLightningf each particle after it has been emitted
         particleSystemLightning.direction1 = new BABYLON.Vector3(0.005, 0, 0.005);
         particleSystemLightning.direction2 = new BABYLON.Vector3(-0.005, 0, -0.005);
-        
-        // Angular speLightninged, in radians
-        //particleSystemLightning.minAngularSpeed = particleSystem.maxAngularSpeed = 0;
-        
+
         // Speed
         particleSystemLightning.minEmitPower = 0.5;
         particleSystemLightning.maxEmitPower = 5;
         particleSystemLightning.updateSpeed = 0.2;
 
-        ////////////////////////
+        //fire
         var fire = new BABYLON.FireMaterial("fire", scene);
         fire.diffuseTexture = new BABYLON.Texture("textures/fire.png", scene);
         fire.distortionTexture = new BABYLON.Texture("textures/distortion.png", scene);
@@ -741,6 +743,7 @@
 
         firePlane.material = fire;
 
+        //animation to resize fire
         var fireAnimation = function (property, from, to) {
             var keys = [
                 { 
@@ -758,33 +761,44 @@
         
             scene.beginDirectAnimation(firePlane, [animation], 0, 5, true);
         };
-        ///////////////////
 
-
+        // GUI //
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
+        // SLIDERS //
+
+        //adjust the wind's intensity here
+        //the panel for the wind slider
         var panel = new BABYLON.GUI.StackPanel();
         panel.width = "220px";
         panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         advancedTexture.addControl(panel);
 
+        //the header for the wind slider
         var header = new BABYLON.GUI.TextBlock();
         header.text = "Wind intensity";
         header.height = "30px";
         header.color = "white";
         panel.addControl(header); 
 
+        //wind intensity slider
         slider.minimum = 0.5;
         slider.maximum = 5;
         slider.value = 0.5;
         slider.height = "20px";
         slider.width = "200px";
+        slider.color="green";
+        slider.background="green";
         slider.onValueChangedObservable.add(function(value) {
             header.text = "Wind intensity: " + Math.round(value);
             if (water) {
+                //the wavelength and wind force of the water is equal to the value of the slider
                 water.waveLength = value;
                 water.windForce = -value;
+
+                //according to the wind intensity, the speed of the moving models will change and
+                //the rain and snow particle will move according to the wind's direction
                 if(Math.round(value)==1){
                     sirenSpeed=0.02;
                     toySpeed=0;
@@ -825,7 +839,7 @@
                     particleSystemRain.direction1 = new BABYLON.Vector3(-12, -12, -12);
                     particleSystemRain.direction2 = new BABYLON.Vector3(-12, -12, -12);
                 }
-
+                //adjusts the volume of the wind
                 if(Math.round(value) == 2 || Math.round(value) == 3){
                     windTrack.setVolume(volumeLow);
                 } else if (Math.round(value) == 3 || Math.round(value) == 4 || Math.round(value) == 5){
@@ -835,7 +849,7 @@
         });
         panel.addControl(slider);    
 
-        ////////////////////
+        //adjust the snow's max. speed here
         var snowMaxSpeedpanel = new BABYLON.GUI.StackPanel();
         snowMaxSpeedpanel.width = "220px";
         snowMaxSpeedpanel.top = "-27%";
@@ -843,7 +857,7 @@
         advancedTexture.addControl(snowMaxSpeedpanel);
 
         var snowMaxSpeedheader = new BABYLON.GUI.TextBlock();
-        snowMaxSpeedheader.text = "snow max speed: " +particleSystem.maxEmitPower;
+        snowMaxSpeedheader.text = "snow max speed: " + particleSystem.maxEmitPower;
         snowMaxSpeedheader.height = "30px";
         snowMaxSpeedheader.color = "white";
         snowMaxSpeedpanel.addControl(snowMaxSpeedheader); 
@@ -857,7 +871,8 @@
         snowMaxSpeedslider.background="green";
         snowMaxSpeedslider.color="green";
         snowMaxSpeedpanel.addControl(snowMaxSpeedslider);
-        ////////////////
+
+        //adjust the snow emit rate here
         var snowEmitRatepanel = new BABYLON.GUI.StackPanel();
         snowEmitRatepanel.width = "220px";
         snowEmitRatepanel.top = "-37%";
@@ -887,7 +902,7 @@
         snowMaxSpeedpanel.isVisible=false;
         snowMaxSpeedheader.isVisible=false;
 
-        ///////////////////
+        //adjust the rain's speed here
         var rainMaxSpeedpanel = new BABYLON.GUI.StackPanel();
         rainMaxSpeedpanel.width = "220px";
         rainMaxSpeedpanel.top = "-27%";
@@ -913,8 +928,8 @@
         rainMaxSpeedpanel.isVisible=false;
         rainMaxSpeedheader.isVisible=false;
         rainMaxSpeedslider.isVisible=false;
-        /////////////////
 
+        //adjust the fog's thickness here
         var fogThickPanel = new BABYLON.GUI.StackPanel();
         fogThickPanel.width = "220px";
         fogThickPanel.top = "-27%";
@@ -922,7 +937,7 @@
         advancedTexture.addControl(fogThickPanel);
 
         var fogThickHeader = new BABYLON.GUI.TextBlock();
-        fogThickHeader.text = "fog thickness: " + scene.fogDensity;
+        fogThickHeader.text =  "fog thickness: " + scene.fogDensity.toFixed(2);
         fogThickHeader.height = "30px";
         fogThickHeader.color = "white";
         fogThickPanel.addControl(fogThickHeader);
@@ -941,6 +956,8 @@
         fogThickHeader.isVisible = false;
         fogThickPanel.isVisible = false;
 
+        // BUTTONS //
+        //daytime button
         var buttonDaytime = BABYLON.GUI.Button.CreateSimpleButton("buttonDaytime", "daytime");
         buttonDaytime.width = 0.05;
         buttonDaytime.height = 0.04;
@@ -951,25 +968,12 @@
         buttonDaytime.fontSize = 16;
         buttonDaytime.background = "green";
         buttonDaytime.onPointerUpObservable.add(function () {
-
+            //when clicked it will change to day time
             daytimeFunction();
-            //SPS.dispose();
-            moon.isVisible=false; 
-            water.bumpHeight = 2; 
-            setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.3);
-            /////////////////////////// INI2 /////////////////
-            SPS.initParticles = function () {
-                for (var p = 0; p < SPS.nbParticles; p++) {
-                    starPosition2(SPS.particles[p]);
-                }
-            }
-            SPS.initParticles();
-            SPS.setParticles();
-            dayTrack.setVolume(volumeLow);
-            nightTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonDaytime);
 
+        //sunset button
         var buttonSunset = BABYLON.GUI.Button.CreateSimpleButton("buttonSunset", "sunset");
         buttonSunset.width = 0.05;
         buttonSunset.height = 0.04;
@@ -981,11 +985,12 @@
         buttonSunset.background = "green";
         //var buttonEvt;
         buttonSunset.onPointerUpObservable.add(function () {
+            //when clicked it will change to sunset
             sunsetFunction();
         });
         advancedTexture.addControl(buttonSunset);
 
-
+        //night button
         var buttonNight = BABYLON.GUI.Button.CreateSimpleButton("buttonNight", "night");
         buttonNight.width = 0.05;
         buttonNight.height = 0.04;
@@ -997,39 +1002,14 @@
         buttonNight.background = "green";
  
         buttonNight.onPointerUpObservable.add(function () {
+            //when clicked it will change to night time
             nightFunction();
-
-            water.bumpHeight = 0.5; 
-            setSkyConfig("material.inclination", skyboxMaterial.inclination, -0.7);
-            window.setTimeout(function () {
-                moon.isVisible=true;
-                ////////////////////// INI2//////////////////
-                SPS.initParticles = function () {
-                    for (var p = 0; p < SPS.nbParticles; p++) {
-                        var rand = Math.floor(Math.random() * (5 - (1) + 1)) + (1);
-
-                        if(rand==1)
-                            starPositionFront(SPS.particles[p]);
-                        else if(rand==2)
-                            starPositionBack(SPS.particles[p]);
-                        else if(rand==3)
-                            starPositionLeft(SPS.particles[p]);
-                        else if(rand==4)
-                            starPositionRight(SPS.particles[p]);
-                        else if(rand==5)
-                            starPositionUp(SPS.particles[p]);
-                    }
-                }
-                SPS.initParticles();
-                SPS.setParticles();
-            }, 900);
-            nightTrack.setVolume(volumeLow);
-            dayTrack.setVolume(volumeNull);
         });
         advancedTexture.addControl(buttonNight);
 
         var startLightning;
         var stopLightning;
+        //stop rain button
         var buttonStopRain = BABYLON.GUI.Button.CreateSimpleButton("buttonStopRain", "stop rain");
         buttonStopRain.width = 0.05;
         buttonStopRain.height = 0.04;
@@ -1042,12 +1022,14 @@
         buttonStopRain.isVisible=false;
         //var buttonEvt;
         buttonStopRain.onPointerUpObservable.add(function () {
+            //when clicked it will stop the rain
             buttonStopRain.isVisible=false;
             stopRain();
 
         });
         advancedTexture.addControl(buttonStopRain);
 
+        //lightning strike button
         var buttonLightningStrike = BABYLON.GUI.Button.CreateSimpleButton("LightningThunder", "Lightning Strike");
         buttonLightningStrike.width = 0.08;
         buttonLightningStrike.height = 0.04;
@@ -1060,10 +1042,12 @@
         buttonLightningStrike.isVisible=false;
         //var buttonEvt;
         buttonLightningStrike.onPointerUpObservable.add(function () {
+            //when clicked it will make a lightning strike
             lightningStrike();
         });
         advancedTexture.addControl(buttonLightningStrike);
 
+        //rain button
         var buttonRain = BABYLON.GUI.Button.CreateSimpleButton("buttonRain", "rain");
         buttonRain.width = 0.05;
         buttonRain.height = 0.04;
@@ -1075,10 +1059,12 @@
         buttonRain.background = "green";
         //var buttonEvt;
         buttonRain.onPointerUpObservable.add(function () {
+            //when clicked it will start the rain
             startRain();
         });
         advancedTexture.addControl(buttonRain);
 
+        //stop snow button
         var buttonStopSnow = BABYLON.GUI.Button.CreateSimpleButton("buttonStopSnow", "stop snow");
         buttonStopSnow.width = 0.05;
         buttonStopSnow.height = 0.04;
@@ -1091,10 +1077,12 @@
         buttonStopSnow.isVisible=false;
         //var buttonEvt;
         buttonStopSnow.onPointerUpObservable.add(function () {
+            //when clicked it will stop the snow
             stopSnow();
         });
         advancedTexture.addControl(buttonStopSnow);
 
+        //snow button
         var buttonSnow = BABYLON.GUI.Button.CreateSimpleButton("buttonSnow", "snow");
         buttonSnow.width = 0.05;
         buttonSnow.height = 0.04;
@@ -1106,10 +1094,12 @@
         buttonSnow.background = "green";
         //var buttonEvt;
         buttonSnow.onPointerUpObservable.add(function () {
+            //when clicked it will start the snow
             startSnow();
         });
         advancedTexture.addControl(buttonSnow);
 
+        //fog button
         var buttonFog = BABYLON.GUI.Button.CreateSimpleButton("buttonFog", "fog");
         buttonFog.width = 0.05;
         buttonFog.height = 0.04;
@@ -1121,10 +1111,12 @@
         buttonFog.background = "green";
         //var buttonEvt;
         buttonFog.onPointerUpObservable.add(function () {
+            //when clicked it will start the fog
             startFog();
         });
         advancedTexture.addControl(buttonFog);
 
+        //stop fog button
         var buttonStopFog = BABYLON.GUI.Button.CreateSimpleButton("buttonStopFog", "stop fog");
         buttonStopFog.width = 0.05;
         buttonStopFog.height = 0.04;
@@ -1136,23 +1128,12 @@
         buttonStopFog.background = "green";
         buttonStopFog.isVisible=false;
         buttonStopFog.onPointerUpObservable.add(function(){
+            //when clicked it will stop the fog
             stopFog();
         });
         advancedTexture.addControl(buttonStopFog);
 
-        /*var buttonWind = BABYLON.GUI.Button.CreateSimpleButton("buttonwind", "wind");
-        buttonWind.width = 0.05;
-        buttonWind.height = 0.04;
-        buttonWind.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        buttonWind.left = "-3%";
-        buttonWind.color = "white";
-        buttonWind.fontSize = 14;
-        buttonWind.background = "green";
-        buttonWind.onPointerUpObservable.add(function(){
-            water.windForce = 0;
-        });
-        advancedTexture.addControl(buttonWind);*/
-
+        //reset button
         var resetbtn = BABYLON.GUI.Button.CreateSimpleButton("resetbtn", "reset");
         resetbtn.width = 0.08;
         resetbtn.height = 0.05;
@@ -1163,12 +1144,11 @@
         resetbtn.background = "green";
         //var buttonEvt;
         resetbtn.onPointerUpObservable.add(function () {
-
+            //resets back to the original setting
             groundMaterial.diffuseTexture = new BABYLON.Texture("textures/TexturesCom_Grass0027_7_S.jpg", scene);
             groundMaterial.diffuseTexture.uScale = 6;
             groundMaterial.diffuseTexture.vScale = 6;
-            treeFall("rotation.z", tree.rotation.z, (Math.PI/180));
-            //scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+            //set the moon invisible
             moon.isVisible=false;
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
@@ -1178,12 +1158,17 @@
             SPS.initParticles();
             SPS.setParticles();
             treeFall("rotation.z", tree.rotation.z, Math.PI/180);
-            scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
+            //scene.beginDirectAnimation(skybox, [animation], 100, 0, true);
             dayTrack.setVolume(volumeLow);
             windTrack.setVolume(volumeNull);
             nightTrack.setVolume(volumeNull);
             //groundMaterial.alpha = 0;
-            sirenSpeed=0.01;//set rotor speed to the beggining speed
+            //set moving models' speed into their initial speed
+            sirenSpeed= 0.01;
+            toySpeed = 0;
+            //set wind slider back to initial value
+            slider.value = 0.5;
+            header.text = "Wind intensity";
             //set to daytime
             daytimeFunction();
             //stop fog
@@ -1195,6 +1180,10 @@
             //stop fire
             fireAnimation("scaling.y", firePlane.scaling.y, 0);
             fireAnimation("scaling.x", firePlane.scaling.x, 0);
+            // buttonStopRain.setVisible = false;
+            // buttonStopFog.setVisible = false;
+            // buttonStopSnow.setVisible = false;
+            //camera.setPosition(new BABYLON.Vector3(5, 12, -125));
         });
         advancedTexture.addControl(resetbtn);
 
@@ -1206,8 +1195,6 @@
         });
 
     });
-
 </script>
-
 </body>
 </html>
